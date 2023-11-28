@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="crn-synth",
+    name="crnsynth",
     version="0.0.1",
     description="Synthetic data generation methods for the Cancer Registry of Norway",
     author="Daan Knoors, Severin Elvatun",

@@ -1,0 +1,40 @@
+{
+    "base": {
+        "experiment_id": "base_exp",
+        "run_id": "base_config",
+        "seed": 42,
+        "save_score_report": true,
+        "save_generator": true,
+        "save_synthetic": true,
+        "save_config": true
+    },
+    "data": {
+        "dataset_name": "adult",
+        "augmentation_data": "",
+        "data_loader_name": "survival",
+        "data_loader_kwargs": {
+            "target_column": "status_os",
+            "time_to_event_column": "os",
+            "sensitive_columns": ["age"],
+            "important_features": ["PD-L1 result"],
+            "test_size": 0.1,
+            "random_state": 42
+        }
+    },
+    "generator": {
+        "generator_name": "survival_ctgan",
+        "generalize": false,
+        "generator_kwargs": {
+            "n_iter": 2000,
+            "lr": 0.000046
+        }
+    },
+    "evaluation": {
+        "nrwe_cox_beta_score": {
+            "clip_value": 4
+        },
+        "nrwe_predicted_median_survival_score": {
+            "clip_value": 4
+        }
+    }
+}
