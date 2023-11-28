@@ -6,7 +6,7 @@ Contains example data and notebooks for test purposes.
 ## Installation
 Create env:
 
->`conda create -n python=3.9 {env_name} pip`
+>`conda create -n {env_name} python=3.9`
 
 Install project dependencies:
 >`pip install -r requirements.txt`
