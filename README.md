@@ -1,6 +1,8 @@
 # CRN Synth
 Synthetic data generation methods for the Cancer Registry of Norway
 
+Contains example data and notebooks for test purposes.
+
 ## Installation
 Create env:
 
@@ -12,3 +14,4 @@ Install project dependencies:
 
 ## Development
 Code is automatically formatted and verified using pre-commit consisting of isort, black and flake8.
+
