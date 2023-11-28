@@ -11,6 +11,8 @@ Create env:
 Install project dependencies:
 >`pip install -r requirements.txt`
 
+For editable local installation of crnsynth:
+>`pip install -e .`
 
 ## Development
 Code is automatically formatted and verified using pre-commit consisting of isort, black and flake8.
