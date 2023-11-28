@@ -15,3 +15,7 @@ Install project dependencies:
 ## Development
 Code is automatically formatted and verified using pre-commit consisting of isort, black and flake8.
 
+Make sure to run the following to set-up pre-commit hooks in your git repo.
+>`pre-commit install`
+
+When working on TSD use the [TSD-code-sync](https://marketplace.visualstudio.com/items?itemName=FlorianKrull.tsd-code-sync) plugin.
