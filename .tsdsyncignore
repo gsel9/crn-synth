@@ -1,0 +1,10 @@
+.git/
+.vscode/
+.DS_Store
+workspace/
+__pycache__/
+.idea/
+results/
+data/
+*.egg-info
+.gitignore
