@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 # Paths
-PATH_REPO = Path(os.path.dirname(os.path.realpath(__file__))).parent
+PATH_REPO = Path(os.path.dirname(os.path.realpath(__file__))).parents[1]
 PATH_CODE = PATH_REPO / "crnsynth"
 PATH_RESULTS = PATH_REPO / "results"
 PATH_SYNTH_CONFIGS = PATH_CODE / "configs"
