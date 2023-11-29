@@ -10,7 +10,7 @@ from synthesis.evaluation.efficacy import (
 )
 from synthesis.evaluation.metrics import AssociationsComparison, MarginalComparison
 
-from crnsynth import postprocess
+from crnsynth.process import postprocess
 
 
 def plot_heatmap(
