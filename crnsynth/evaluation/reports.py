@@ -9,9 +9,10 @@ from synthcity.metrics.scores import ScoreEvaluator
 # TODO: need to adapt dataloader to surv, generic etc
 from synthcity.plugins.core.dataloader import GenericDataLoader
 
-from crnsynth import config, util
+from crnsynth.configs import config
 from crnsynth.evaluation.measure_evaluation import CustomMetrics
 from crnsynth.evaluation.utils import remove_dir
+from crnsynth.process import util
 
 ALL_METRICS = {
     "sanity": [
@@ -169,12 +170,3 @@ def create_score_reports(
         df_reports.to_csv(path_file)
 
     return df_reports
-
-
-if __name__ == "__main__":
-    # example of create score_reports for adult-minimal dataset
-    # subset_metrics = {"sanity": ALL_METRICS["sanity"]}
-    subset_metrics = None
-    df_reports = create_score_reports(
-        dataset_name="adult-minimal", metrics=subset_metrics
-    )

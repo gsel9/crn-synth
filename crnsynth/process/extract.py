@@ -1,6 +1,6 @@
 import os
 
-from crnsynth.etl.load import load_exp_config
+from crnsynth.process.load import load_exp_config
 
 
 # TODO: filter out files in a dir based on target str to include in output

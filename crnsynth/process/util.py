@@ -9,7 +9,46 @@ from sklearn.linear_model import LogisticRegression
 from synthcity.utils.serialization import load, load_from_file, save, save_to_file
 from synthesis.synthesizers.privbayes import PrivBayes
 
-from crnsynth import config
+from crnsynth.configs import config
+
+
+def update_config_from_kwargs(
+    run_config, base_kwargs=None, data_kwargs=None, generator_kwargs=None
+):
+    """Modify the config key: value pairs in place based on optional keyword
+    arguments.
+
+    Args:
+        run_config:
+        base_kwargs:
+        data_kwargs:
+        generator_kwargs:
+
+    """
+
+    if base_kwargs is not None:
+        _update_config(run_config, "base", base_kwargs)
+
+    if data_kwargs is not None:
+        _update_config(run_config, "data", data_kwargs)
+
+    if generator_kwargs is not None:
+        _update_config(run_config, "generator", generator_kwargs)
+
+
+# TODO: handle nested dict updates by recursive func call
+def _update_config(config, mode_key, kwargs):
+    if not kwargs:
+        return
+
+    for value_key, value in kwargs.items():
+        # nested values
+        if isinstance(value, dict):
+            for subject_key, subject_value in value.items():
+                config[mode_key][value_key][subject_key] = subject_value
+
+        else:
+            config[mode_key][value_key] = value
 
 
 def infmax(values):
@@ -18,8 +57,8 @@ def infmax(values):
 
 
 def gen_random_seed(n_seeds, min_val=0, max_val=100, seed=42, sorted=True):
-    rnd = np.random.RandomState(seed)
-    seeds = rnd.choice(range(min_val, max_val), n_seeds, replace=False)
+    rnd = np.random.default_rng(seed)
+    seeds = rnd.choice(np.arange(min_val, max_val), n_seeds, replace=False)
 
     if sorted:
         seeds.sort()
@@ -30,8 +69,7 @@ def gen_random_seed(n_seeds, min_val=0, max_val=100, seed=42, sorted=True):
 def check_synthetic_shape(data_synth, data_real):
     if np.shape(data_synth) != np.shape(data_real):
         warnings.warn(
-            """Data real has shape {np.shape(data_synth)} \
-                      while data synth shape np.shape(data_real)"""
+            f"Data real has shape {np.shape(data_synth)} while data synth shape {np.shape(data_real)}"
         )
 
 

@@ -8,8 +8,8 @@ import os
 from synthcity.utils.serialization import save_to_file
 
 # local
-from crnsynth import config
-from crnsynth.util import make_json_serializeable
+from crnsynth.configs import config
+from crnsynth.process.util import make_json_serializeable
 
 
 def save_generator(path_to_file, generator, save_kwargs={}, verbose=1):

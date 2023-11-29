@@ -4,19 +4,13 @@ from pathlib import Path
 
 # Paths
 PATH_REPO = Path(os.path.dirname(os.path.realpath(__file__))).parent
+PATH_CODE = PATH_REPO / "crnsynth"
 PATH_RESULTS = PATH_REPO / "results"
+PATH_SYNTH_CONFIGS = PATH_CODE / "configs"
 
-PATH_SYNTH_CONFIGS = PATH_REPO / "synthesis_configs"
-
+# Default directories to create for results
 DEFAULT_DIRS = ["synthetic_data", "generators", "configs", "reports"]
 
-# path to data for TSD
-PATH_DATA_TSD = (
-    PATH_REPO.parents[2]
-    if PATH_REPO.parents[2].name == "durable"
-    else PATH_REPO.parents[3]
-)
-PATH_LUNG_DATA_TSD = PATH_DATA_TSD / "lung-cancer/synthetic/data"
 
 # path to all data files available for synthesis.
 PATH_DATA = {

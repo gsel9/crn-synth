@@ -21,3 +21,17 @@ Make sure to run the following to set-up pre-commit hooks in your git repo.
 >`pre-commit install`
 
 When working on TSD use the [TSD-code-sync](https://marketplace.visualstudio.com/items?itemName=FlorianKrull.tsd-code-sync) plugin.
+
+
+## File structure
+Top-level structure
+- **crnsynth**: generic synthesis code used by CRN
+- **data**: example datasets
+- **notebooks**: showcasing functionality of the repo
+
+Diving deeper into the main code under **crnsynth**`:
+- configs: synthesis configuration settings, specifing data, generator and evaluation settings
+- etl: extract, transform and load functionality of data
+- evaluation: evaluation methods and custom metrics
+- synth: general synthesis methods
+

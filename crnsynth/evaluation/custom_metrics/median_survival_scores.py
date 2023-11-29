@@ -15,7 +15,7 @@ from crnsynth.evaluation.custom_metrics.utils import (
     fit_kaplanmeier,
     propensity_weights,
 )
-from crnsynth.util import infmax
+from crnsynth.process.util import infmax
 
 
 def median_survival_score(hybrid_data, real_data, duration_col, event_col):

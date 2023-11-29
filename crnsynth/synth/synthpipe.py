@@ -1,14 +1,13 @@
 """Synthesis pipeline"""
 import warnings
 
-import pandas as pd
 from sklearn.model_selection import train_test_split
 from synthcity.plugins.core.dataloader import (
     GenericDataLoader,
     SurvivalAnalysisDataLoader,
 )
 
-from crnsynth import check
+from crnsynth.evaluation import check
 
 warnings.filterwarnings("default")
 
