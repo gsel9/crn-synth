@@ -23,40 +23,34 @@ ALL_METRICS = {
         "distant_values_probability",
     ],
     "stats": [
-        # "chi_squared_test",
-        # "feature_corr",
-        # "inv_kl_divergence",
-        # "ks_test",
-        # "max_mean_discrepancy",
+        "chi_squared_test",
+        "feature_corr",
+        "inv_kl_divergence",
+        "ks_test",
+        "max_mean_discrepancy",
         # "prdc",
         # "alpha_precision",
         # "survival_km_distance",
         # -*- custom metrics -*-
-        "wasserstein_dist",
-        "jensenshannon_dist",
-        "nrwe_cox_beta_augmented_score",
-        "nrwe_median_survival_augmented_score",
-        "nrwe_predicted_median_survival_augmented_score",
-        "nrwe_survival_curves_distance_augmented_score",
-        "nrwe_predicted_cindex_augmented_score",
-        "nrwe_predicted_cumulative_hazard_augmented_score",
+        "contingency_similarity_score",
+        "correlation_similarity_score",
+        "cox_beta_augmented_score",
+        "median_survival_augmented_score",
+        "predicted_median_survival_augmented_score",
+        "survival_curves_distance_augmented_score",
     ],
     "performance": ["linear_model", "mlp", "xgb", "feat_rank_distance"],
     "detection": [
         "detection_xgb",
         "detection_mlp",
-        "detection_gmm",
         "detection_linear",
     ],
     "privacy": [
         "delta-presence",
-        # "k-anonymization",
-        "k-map",
-        # "distinct l-diversity",
+        "k-anonymization",
         "identifiability_score",
-        # "DomiasMIA_BNAF",
-        # "DomiasMIA_KDE",
-        # "DomiasMIA_prior",
+        # -*- custom metrics -*-
+        "cap_categorical_score",
     ],
 }
 
@@ -68,6 +62,7 @@ def score_report(
     metrics,
     data_real_aug=None,
     data_synth_aug=None,
+    sensitive_columns=None,
     reduce="mean",
     cache_dir="./tmp",
 ):
@@ -77,17 +72,31 @@ def score_report(
         "stats": ALL_METRICS["stats"],
         "sanity": ALL_METRICS["sanity"],
         "privacy": ALL_METRICS["privacy"],
+        "detection": ALL_METRICS["detection"],
     }
 
     if data_real_aug is not None:
         X_gt_aug = GenericDataLoader(data_real_aug)
 
+        if sensitive_columns is not None:
+            X_gt_aug.sensitive_features = list(sensitive_columns)
+
     if data_synth_aug is not None:
         X_syn_aug = GenericDataLoader(data_synth_aug)
 
+        if sensitive_columns is not None:
+            X_syn_aug.sensitive_features = list(sensitive_columns)
+
+    X_gt = GenericDataLoader(data_real)
+    X_syn = GenericDataLoader(data_fake)
+
+    if sensitive_columns is not None:
+        X_gt.sensitive_features = list(sensitive_columns)
+        X_syn.sensitive_features = list(sensitive_columns)
+
     eval = CustomMetrics.evaluate(
-        X_gt=GenericDataLoader(data_real),
-        X_syn=GenericDataLoader(data_fake),
+        X_gt=X_gt,
+        X_syn=X_syn,
         X_gt_aug=X_gt_aug,
         X_syn_aug=X_syn_aug,
         metrics=metrics,

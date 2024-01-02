@@ -65,7 +65,7 @@ def predicted_median_survival_score(
     clip_value=4,
     event_col=None,
 ):
-    cox_cols = list(feature_cols) + [event_col, duration_col]  # , "weights"]
+    cox_cols = list(feature_cols) + [event_col, duration_col]
 
     fpm_original = fit_flexible_parametric_model(
         real_data, duration_col, cox_cols, event_col=event_col
@@ -77,12 +77,14 @@ def predicted_median_survival_score(
     t_original = fpm_original.predict_median(real_data[feature_cols]).values
     t_hybrid = fpm_hybrid.predict_median(hybrid_data[feature_cols]).values
 
-    # handle <inf> values by replacement to not change number of samples
-    t_pred_max = infmax(t_original)
-    t_original[np.isinf(t_original)] = t_pred_max
-    t_hybrid[np.isinf(t_hybrid)] = t_pred_max
+    return mean_squared_error(t_original, t_hybrid)
 
-    return mean_squared_error(t_original / t_pred_max, t_hybrid / t_pred_max)
+    # handle <inf> values by replacement to not change number of samples
+    # t_pred_max = infmax(t_original)
+    # t_original[np.isinf(t_original)] = t_pred_max
+    # t_hybrid[np.isinf(t_hybrid)] = t_pred_max
+
+    # return mean_squared_error(t_original / t_pred_max, t_hybrid / t_pred_max)
 
 
 class PredictedMedianSurvivalScore(StatisticalEvaluator):
