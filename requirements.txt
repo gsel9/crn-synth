@@ -177,7 +177,6 @@ requests-toolbelt==1.0.0
 rfc3986==2.0.0
 rich==13.6.0
 rsa==4.9
-rwe-accell==1.0.0
 safetensors==0.3.3
 scikit-learn==1.2.2
 scikit-plot==0.3.7
