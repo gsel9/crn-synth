@@ -5,15 +5,17 @@ in an arbitrary score_fn and kwargs  to the score_fn. Should make an issue on th
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
-from lifelines import CoxPHFitter, KaplanMeierFitter
+
+# from lifelines import CoxPHFitter, KaplanMeierFitter
 from pydantic import validate_arguments
 from scipy.integrate import trapezoid
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import mean_squared_error
+
+# from sklearn.linear_model import LogisticRegression
+# from sklearn.metrics import mean_squared_error
 from synthcity.metrics.eval_statistical import StatisticalEvaluator
 from synthcity.plugins.core.dataloader import DataLoader
 
-from crnsynth.evaluation.custom_metrics.utils import fit_kaplanmeier
+from .utils import fit_kaplanmeier
 
 
 def survival_curves_distance_score(hybrid_data, real_data, duration_col, event_col):
@@ -29,11 +31,11 @@ def survival_curves_distance_score(hybrid_data, real_data, duration_col, event_c
 
 
 class SurvivalCurvesDistanceScore(StatisticalEvaluator):
-    def __init__(self, duration_col: str, event_col: str, **kwargs: Any) -> None:
-        super().__init__(default_metric="score", **kwargs)
+    DURATION_COL = None
+    EVENT_COL = None
 
-        self.duration_col = duration_col
-        self.event_col = event_col
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(default_metric="score", **kwargs)
 
     @staticmethod
     def name() -> str:
@@ -43,12 +45,19 @@ class SurvivalCurvesDistanceScore(StatisticalEvaluator):
     def direction() -> str:
         return "minimize"
 
+    @classmethod
+    def update_cls_params(cls, params):
+        """Update the clip value class method without
+        instantiating the class."""
+        for name, value in params.items():
+            setattr(cls, name, value)
+
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _evaluate(self, X_gt_aug: DataLoader, X_syn_aug: DataLoader) -> Dict:
         score = survival_curves_distance_score(
             hybrid_data=X_syn_aug.data,
             real_data=X_gt_aug.data,
-            duration_col=self.duration_col,
-            event_col=self.event_col,
+            duration_col=self.DURATION_COL,
+            event_col=self.EVENT_COL,
         )
         return {"score": score}
