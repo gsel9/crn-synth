@@ -9,7 +9,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "synthetic-data-generation>=0.1.14",
-        "synthcity>=0.2.9",
+        "synthcity",
         "diffprivlib>=0.6.3",
     ],
     extras_require={"interactive": ["matplotlib", "jupyter"]},

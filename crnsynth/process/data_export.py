@@ -37,6 +37,7 @@ def save_json(path_to_file, data, verbose=1):
 
 
 def save_output_from_experiment(
+    path_to_dir,
     exp_name,
     file_suffix,
     generator=None,
@@ -44,26 +45,26 @@ def save_output_from_experiment(
     score_report=None,
     run_config=None,
 ):
-    path_to_exp = config.PATH_RESULTS / exp_name
+    # path_to_exp = config.PATH_RESULTS / exp_name
     filename = exp_name + "_" + file_suffix
 
-    create_experiment_dir(path_to_exp)
+    create_experiment_dir(path_to_dir)
 
     if generator is not None:
-        save_generator(path_to_exp / f"generators/{filename}.pkl", generator)
+        save_generator(path_to_dir / f"generators/{filename}.pkl", generator)
 
     if data_synth is not None:
-        save_csv(path_to_exp / f"synthetic_data/{filename}.csv", data_synth)
+        save_csv(path_to_dir / f"synthetic_data/{filename}.csv", data_synth)
 
     if score_report is not None:
-        save_csv(path_to_exp / f"reports/{filename}.csv", score_report)
+        save_csv(path_to_dir / f"reports/{filename}.csv", score_report)
 
     if run_config is not None:
-        save_json(path_to_exp / f"configs/{filename}.json", run_config)
+        save_json(path_to_dir / f"configs/{filename}.json", run_config)
 
 
 def save_experiment_from_config(
-    run_config, generator=None, data_synth=None, score_report=None
+    path_to_dir, run_config, generator=None, data_synth=None, score_report=None
 ):
     # output management
     config_base = run_config["base"]
@@ -79,6 +80,7 @@ def save_experiment_from_config(
     score_report = score_report if config_base["save_score_report"] else None
 
     save_output_from_experiment(
+        path_to_dir=path_to_dir,
         exp_name=config_base["experiment_id"],
         file_suffix=file_suffix,
         generator=generator,

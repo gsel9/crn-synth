@@ -12,6 +12,22 @@ from synthesis.synthesizers.privbayes import PrivBayes
 from crnsynth.configs import config
 
 
+def sample_subset(items, size, seed=None, return_residual=True):
+    """Sample a subset from a collection of items."""
+
+    if seed is not None:
+        rnd = np.random.RandomState(seed)
+        sample = rnd.choice(items, size=size, replace=False)
+
+    else:
+        sample = np.random.choice(items, size=size, replace=False)
+
+    if return_residual:
+        return sample, list(set(items) - set(sample))
+
+    return sample
+
+
 def update_config_from_kwargs(
     run_config, base_kwargs=None, data_kwargs=None, generator_kwargs=None
 ):

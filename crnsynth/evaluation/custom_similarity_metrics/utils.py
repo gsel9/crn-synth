@@ -44,3 +44,18 @@ def fit_cox(data, duration_col, cox_cols, weights_col=None, event_col=None):
     )
 
     return cox
+
+
+def fit_flexible_parametric_model(
+    data, duration_col, cox_cols, weights_col=None, event_col=None
+):
+    # fits a cubic spline for the baseline hazard
+    fpm = CoxPHFitter(baseline_estimation_method="spline", n_baseline_knots=2)
+    fpm.fit(
+        data[cox_cols],
+        duration_col=duration_col,
+        weights_col=weights_col,
+        event_col=event_col,
+    )
+
+    return fpm
