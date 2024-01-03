@@ -58,13 +58,21 @@ def _update_config(config, mode_key, kwargs):
         return
 
     for value_key, value in kwargs.items():
+        # insert data directly if unknown field
+        if value_key not in config[mode_key]:
+            _insert_new_field(config, mode_key, value_key, value)
+            continue
+
         # nested values
         if isinstance(value, dict):
             for subject_key, subject_value in value.items():
                 config[mode_key][value_key][subject_key] = subject_value
-
         else:
             config[mode_key][value_key] = value
+
+
+def _insert_new_field(config, mode_key, value_key, value):
+    config[mode_key].update({value_key: value})
 
 
 def infmax(values):
