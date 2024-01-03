@@ -13,7 +13,9 @@ from crnsynth.evaluation import (
 
 
 def update_measures_from_config(column_config):
-    """Configure evaluation metrics."""
+    """Change measure objects by specifications in the
+    run config.
+    """
 
     ContingencySimilarityScore.update_cls_params(
         {"CATEGORICAL_COLS": column_config["categorical_cols"]}

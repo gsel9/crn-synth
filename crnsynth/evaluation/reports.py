@@ -24,13 +24,9 @@ ALL_METRICS = {
     ],
     "stats": [
         "chi_squared_test",
-        "feature_corr",
-        "inv_kl_divergence",
         "ks_test",
-        "max_mean_discrepancy",
-        # "prdc",
-        # "alpha_precision",
-        # "survival_km_distance",
+        "wasserstein_dist",
+        "jensenshannon_dist",
         # -*- custom metrics -*-
         "contingency_similarity_score",
         "correlation_similarity_score",
@@ -77,22 +73,17 @@ def score_report(
 
     if data_real_aug is not None:
         X_gt_aug = GenericDataLoader(data_real_aug)
-
-        if sensitive_columns is not None:
-            X_gt_aug.sensitive_features = list(sensitive_columns)
+        # X_gt_aug.sensitive_features = list(sensitive_columns)
 
     if data_synth_aug is not None:
         X_syn_aug = GenericDataLoader(data_synth_aug)
-
-        if sensitive_columns is not None:
-            X_syn_aug.sensitive_features = list(sensitive_columns)
+        # X_syn_aug.sensitive_features = list(sensitive_columns)
 
     X_gt = GenericDataLoader(data_real)
-    X_syn = GenericDataLoader(data_fake)
+    # X_gt.sensitive_features = list(sensitive_columns)
 
-    if sensitive_columns is not None:
-        X_gt.sensitive_features = list(sensitive_columns)
-        X_syn.sensitive_features = list(sensitive_columns)
+    X_syn = GenericDataLoader(data_fake)
+    # X_syn.sensitive_features = list(sensitive_columns)
 
     eval = CustomMetrics.evaluate(
         X_gt=X_gt,
