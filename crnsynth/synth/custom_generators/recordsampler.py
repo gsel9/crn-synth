@@ -18,7 +18,7 @@ class RecordSampler(Plugin):
     CAUTION: do not release output when based on sensitive data, due to privacy risk."""
 
     def __init__(self, replace=True, **kwargs: Any) -> None:
-        self.replace = True
+        self.replace = replace
         super().__init__(**kwargs)
 
     @staticmethod

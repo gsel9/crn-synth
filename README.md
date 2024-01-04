@@ -31,7 +31,7 @@ Top-level structure
 
 Diving deeper into the main code under **crnsynth**`:
 - configs: synthesis configuration settings, specifing data, generator and evaluation settings
-- etl: extract, transform and load functionality of data
+- process: extract, transform and load functionality of data
 - evaluation: evaluation methods and custom metrics
 - synth: general synthesis methods
 

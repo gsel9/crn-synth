@@ -73,22 +73,17 @@ def score_report(
 
     if data_real_aug is not None:
         X_gt_aug = GenericDataLoader(data_real_aug)
-
-        if sensitive_columns is not None:
-            X_gt_aug.sensitive_features = list(sensitive_columns)
+        # X_gt_aug.sensitive_features = list(sensitive_columns)
 
     if data_synth_aug is not None:
         X_syn_aug = GenericDataLoader(data_synth_aug)
-
-        if sensitive_columns is not None:
-            X_syn_aug.sensitive_features = list(sensitive_columns)
+        # X_syn_aug.sensitive_features = list(sensitive_columns)
 
     X_gt = GenericDataLoader(data_real)
-    X_syn = GenericDataLoader(data_fake)
+    # X_gt.sensitive_features = list(sensitive_columns)
 
-    if sensitive_columns is not None:
-        X_gt.sensitive_features = list(sensitive_columns)
-        X_syn.sensitive_features = list(sensitive_columns)
+    X_syn = GenericDataLoader(data_fake)
+    # X_syn.sensitive_features = list(sensitive_columns)
 
     if target_column is not None:
         X_gt_aug.target_column = target_column
