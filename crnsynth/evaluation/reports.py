@@ -23,15 +23,12 @@ ALL_METRICS = {
         "distant_values_probability",
     ],
     "stats": [
+        "jensenshannon_dist",
         "chi_squared_test",
-        "feature_corr",
         "inv_kl_divergence",
         "ks_test",
-        "max_mean_discrepancy",
-        # "prdc",
-        # "alpha_precision",
-        # "survival_km_distance",
-        # -*- custom metrics -*-
+        "wasserstein_dist",
+        "feature_corr",
         "contingency_similarity_score",
         "correlation_similarity_score",
         "cox_beta_augmented_score",
@@ -39,29 +36,27 @@ ALL_METRICS = {
         "predicted_median_survival_augmented_score",
         "survival_curves_distance_augmented_score",
     ],
-    "performance": ["linear_model", "mlp", "xgb", "feat_rank_distance"],
+    "performance": ["linear_model", "xgb", "feat_rank_distance"],
     "detection": [
         "detection_xgb",
-        "detection_mlp",
         "detection_linear",
     ],
     "privacy": [
         "delta-presence",
         "k-anonymization",
         "identifiability_score",
-        # -*- custom metrics -*-
         "cap_categorical_score",
     ],
 }
 
 
-# TODO: enable custom selection of score stats
 def score_report(
     data_real,
     data_fake,
     metrics,
     data_real_aug=None,
     data_synth_aug=None,
+    target_column=None,
     sensitive_columns=None,
     reduce="mean",
     cache_dir="./tmp",
@@ -73,6 +68,7 @@ def score_report(
         "sanity": ALL_METRICS["sanity"],
         "privacy": ALL_METRICS["privacy"],
         "detection": ALL_METRICS["detection"],
+        "performance": ALL_METRICS["performance"],
     }
 
     if data_real_aug is not None:
@@ -93,6 +89,10 @@ def score_report(
     if sensitive_columns is not None:
         X_gt.sensitive_features = list(sensitive_columns)
         X_syn.sensitive_features = list(sensitive_columns)
+
+    if target_column is not None:
+        X_gt_aug.target_column = target_column
+        X_syn_aug.target_column = target_column
 
     eval = CustomMetrics.evaluate(
         X_gt=X_gt,

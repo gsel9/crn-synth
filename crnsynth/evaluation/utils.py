@@ -25,6 +25,13 @@ def update_measures_from_config(column_config):
     MedianSurvivalScore.update_cls_params(
         {"DURATION_COL": column_config["duration"], "EVENT_COL": column_config["event"]}
     )
+    PredictedMedianSurvivalScore.update_cls_params(
+        {
+            "FEATURE_COLS": column_config["feature_cols"],
+            "DURATION_COL": column_config["duration"],
+            "EVENT_COL": column_config["event"],
+        }
+    )
     SurvivalCurvesDistanceScore.update_cls_params(
         {"DURATION_COL": column_config["duration"], "EVENT_COL": column_config["event"]}
     )
@@ -38,16 +45,6 @@ def update_measures_from_config(column_config):
             "EVENT_COL": column_config["event"],
         }
     )
-    PredictedMedianSurvivalScore.update_cls_params(
-        {
-            "CLIP_VALUE": column_config["clip_value"],
-            "FEATURE_COLS": column_config["feature_cols"],
-            "DURATION_COL": column_config["duration"],
-            "TARGET_COL": column_config["target"],
-            "EVENT_COL": column_config["event"],
-        }
-    )
-
     CategoricalCAPScore.update_cls_params(
         {
             "CATEGORICAL_COLS": column_config["categorical_cols"],

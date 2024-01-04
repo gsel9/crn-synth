@@ -6,24 +6,30 @@ from typing import Any, Dict
 
 import numpy as np
 from pydantic import validate_arguments
-from sklearn.metrics import mean_squared_error
+from scipy.stats import pearsonr
+
+# from sklearn.metrics import mean_squared_error
 from synthcity.metrics.eval_statistical import StatisticalEvaluator
 from synthcity.plugins.core.dataloader import DataLoader
 
-from crnsynth.process.util import infmax
-
 from .utils import fit_flexible_parametric_model, fit_kaplanmeier
 
+# from crnsynth.process.util import infmax
 
-# TODO: min-max scaling
+
 def median_survival_score(hybrid_data, real_data, duration_col, event_col):
+    """Deviation between the median survival times in the original and
+    synthetic data. Survival curves are estimated with the Kaplan-Meier method.
+
+    Optimal score value is zero.
+    """
     km_original = fit_kaplanmeier(real_data[duration_col], real_data[event_col])
     km_hybrid = fit_kaplanmeier(hybrid_data[duration_col], hybrid_data[event_col])
 
     S_original = km_original.median_survival_time_
     S_hybrid = km_hybrid.median_survival_time_
 
-    return (S_original / S_original.max()) - (S_hybrid / S_original.max())
+    return 1 - (S_hybrid / S_original)
 
 
 class MedianSurvivalScore(StatisticalEvaluator):
@@ -57,34 +63,24 @@ class MedianSurvivalScore(StatisticalEvaluator):
 
 
 def predicted_median_survival_score(
-    hybrid_data,
-    real_data,
-    feature_cols,
-    target_col,
-    duration_col,
-    clip_value=4,
-    event_col=None,
+    hybrid_data, real_data, feature_cols, duration_col, event_col=None
 ):
-    cox_cols = list(feature_cols) + [event_col, duration_col]
+    fit_cols = list(feature_cols) + [event_col, duration_col]
 
     fpm_original = fit_flexible_parametric_model(
-        real_data, duration_col, cox_cols, event_col=event_col
+        real_data, duration_col, fit_cols, event_col=event_col
     )
     fpm_hybrid = fit_flexible_parametric_model(
-        hybrid_data, duration_col, cox_cols, event_col=event_col
+        hybrid_data, duration_col, fit_cols, event_col=event_col
     )
 
     t_original = fpm_original.predict_median(real_data[feature_cols]).values
     t_hybrid = fpm_hybrid.predict_median(hybrid_data[feature_cols]).values
 
-    return mean_squared_error(t_original, t_hybrid)
+    t_original[np.isinf(t_original)] = 0
+    t_hybrid[np.isinf(t_hybrid)] = 0
 
-    # handle <inf> values by replacement to not change number of samples
-    # t_pred_max = infmax(t_original)
-    # t_original[np.isinf(t_original)] = t_pred_max
-    # t_hybrid[np.isinf(t_hybrid)] = t_pred_max
-
-    # return mean_squared_error(t_original / t_pred_max, t_hybrid / t_pred_max)
+    return pearsonr(t_original, t_hybrid).statistic
 
 
 class PredictedMedianSurvivalScore(StatisticalEvaluator):
@@ -120,9 +116,7 @@ class PredictedMedianSurvivalScore(StatisticalEvaluator):
             hybrid_data=X_syn_aug.data,
             real_data=X_gt_aug.data,
             feature_cols=self.FEATURE_COLS,
-            target_col=self.TARGET_COL,
             duration_col=self.DURATION_COL,
-            clip_value=self.CLIP_VALUE,
             event_col=self.EVENT_COL,
         )
         return {"score": score}
