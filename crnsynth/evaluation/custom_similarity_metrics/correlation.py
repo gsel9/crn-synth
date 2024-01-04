@@ -7,6 +7,33 @@ from synthcity.metrics.eval_statistical import StatisticalEvaluator
 from synthcity.plugins.core.dataloader import DataLoader
 
 
+def mean_features_correlation(real_data, synthetic_data):
+    """Mean pair-wise feature correlations."""
+    return real_data.corrwith(synthetic_data, axis=1, method="pearson").mean()
+
+
+class FeatureCorrelation(StatisticalEvaluator):
+    NUMERICAL_COLS = None
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(default_metric="score", **kwargs)
+
+    @staticmethod
+    def name() -> str:
+        return "feature_corr"
+
+    @staticmethod
+    def direction() -> str:
+        return "maximize"
+
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
+    def _evaluate(self, X_gt: DataLoader, X_syn: DataLoader) -> Dict:
+        score = mean_features_correlation(
+            real_data=X_gt.data, synthetic_data=X_syn.data
+        )
+        return {"score": score}
+
+
 class CorrelationSimilarityScore(StatisticalEvaluator):
     """TODO"""
 
