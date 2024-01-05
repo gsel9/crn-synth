@@ -22,7 +22,7 @@ def survival_curves_deviation(hybrid_data, real_data, duration_col, event_col):
     A_real = trapezoid(y=kmf_real.survival_function_.values.squeeze())
     A_hybrid = trapezoid(y=kmf_hybrid.survival_function_.values.squeeze())
 
-    return 1 - A_hybrid / A_real
+    return abs(A_hybrid - A_real)  # 1 - A_hybrid / A_real
 
 
 class SurvivalCurvesDistanceScore(StatisticalEvaluator):
