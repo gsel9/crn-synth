@@ -101,4 +101,5 @@ class CoxBetaScore(StatisticalEvaluator):
             clip_value=self.CLIP_VALUE,
             event_col=self.EVENT_COL,
         )
-        return {"score": score}
+        # minimize absolute difference
+        return {"score": abs(score)}

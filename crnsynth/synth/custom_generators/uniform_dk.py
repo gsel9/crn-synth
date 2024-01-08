@@ -19,7 +19,7 @@ class UniformDK(Plugin):
 
     @staticmethod
     def name() -> str:
-        return "uniform-dk"
+        return "uniform_sampler_custom"
 
     @staticmethod
     def type() -> str:

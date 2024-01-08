@@ -36,4 +36,5 @@ class ContingencySimilarityScore(StatisticalEvaluator):
             real_data=X_gt.data[self.CATEGORICAL_COLS],
             synthetic_data=X_syn.data[self.CATEGORICAL_COLS],
         )
-        return {"score": score}
+        # maximize feature correlation score
+        return {"score": abs(score)}

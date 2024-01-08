@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 
+# NOTE: some metrics have zero as the optimal score (ie not direction)
 def generator_rankings(
     score_reports: pd.DataFrame,
     weights: typing.Dict[str, np.ndarray] = None,

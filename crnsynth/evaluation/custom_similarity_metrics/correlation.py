@@ -31,7 +31,8 @@ class FeatureCorrelation(StatisticalEvaluator):
         score = mean_features_correlation(
             real_data=X_gt.data, synthetic_data=X_syn.data
         )
-        return {"score": score}
+        # maximize average feature correlation
+        return {"score": abs(score)}
 
 
 class CorrelationSimilarityScore(StatisticalEvaluator):
@@ -64,4 +65,5 @@ class CorrelationSimilarityScore(StatisticalEvaluator):
             synthetic_data=X_syn.data[self.NUMERICAL_COLS],
             coefficient="Pearson",
         )
-        return {"score": score}
+        # maximize feature correlation score
+        return {"score": abs(score)}

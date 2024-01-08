@@ -29,7 +29,7 @@ def median_survival_score(hybrid_data, real_data, duration_col, event_col):
     S_original = km_original.median_survival_time_
     S_hybrid = km_hybrid.median_survival_time_
 
-    return 1 - (S_hybrid / S_original)
+    return abs(S_hybrid - S_original)  # 1 - (S_hybrid / S_original)
 
 
 class MedianSurvivalScore(StatisticalEvaluator):
@@ -101,7 +101,7 @@ class PredictedMedianSurvivalScore(StatisticalEvaluator):
 
     @staticmethod
     def direction() -> str:
-        return "minimize"
+        return "maximize"
 
     @classmethod
     def update_cls_params(cls, params):
@@ -119,4 +119,5 @@ class PredictedMedianSurvivalScore(StatisticalEvaluator):
             duration_col=self.DURATION_COL,
             event_col=self.EVENT_COL,
         )
-        return {"score": score}
+        # absolute pearson coefficient
+        return {"score": abs(score)}

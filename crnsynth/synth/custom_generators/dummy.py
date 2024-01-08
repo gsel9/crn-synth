@@ -22,7 +22,7 @@ class DummySampler(Plugin):
 
     @staticmethod
     def name() -> str:
-        return "dummysampler"
+        return "dummy_sampler_custom"
 
     @staticmethod
     def type() -> str:
