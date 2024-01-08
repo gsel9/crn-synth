@@ -2,6 +2,8 @@ from synthcity.metrics.eval import standard_metrics
 
 from .custom_privacy_metrics.catcap import CategoricalCAPScore
 from .custom_privacy_metrics.catknn import CategoricalKNNScore
+from .custom_privacy_metrics.dcr import DistanceClosestRecord
+from .custom_privacy_metrics.nndr import NearestNeighborDistanceRatio
 from .custom_similarity_metrics.contingency import ContingencySimilarityScore
 from .custom_similarity_metrics.correlation import (
     CorrelationSimilarityScore,
@@ -17,6 +19,8 @@ from .custom_similarity_metrics.survival_curve_scores import SurvivalCurvesDista
 __all__ = [
     "CategoricalCAPScore",
     "CategoricalKNNScore",
+    "DistanceClosestRecord",
+    "NearestNeighborDistanceRatio",
     "ContingencySimilarityScore",
     "CorrelationSimilarityScore",
     "CoxBetaScore",
@@ -29,6 +33,8 @@ __all__ = [
 # register custom metrics to synthcity
 standard_metrics.append(CategoricalCAPScore)
 standard_metrics.append(CategoricalKNNScore)
+standard_metrics.append(DistanceClosestRecord)
+standard_metrics.append(NearestNeighborDistanceRatio)
 standard_metrics.append(CoxBetaScore)
 standard_metrics.append(MedianSurvivalScore)
 standard_metrics.append(PredictedMedianSurvivalScore)
