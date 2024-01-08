@@ -11,6 +11,7 @@ setup(
         "synthetic-data-generation>=0.1.14",
         "synthcity",
         "diffprivlib>=0.6.3",
+        "sdmetrics",
     ],
     extras_require={"interactive": ["matplotlib", "jupyter"]},
 )
