@@ -64,7 +64,7 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
     ) -> Dict:
         cache_file = (
             self._workspace
-            / f"sc_metric_cache_{self.type()}_{self.name()}_{X_gt.hash()}_{X_syn.hash()}_{X_test.hash()}_{self._reduction}_{platform.python_version()}.bkp"
+            / f"sc_metric_cache_{self.type()}_{self.name()}_{self.percentile}_{X_gt.hash()}_{X_syn.hash()}_{X_test.hash()}_{self._reduction}_{platform.python_version()}.bkp"
         )
         if self.use_cache(cache_file):
             return load_from_file(cache_file)
@@ -76,14 +76,21 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
     def _evaluate(
         self, X_gt: DataLoader, X_syn: DataLoader, X_test: DataLoader
     ) -> Dict:
-        distances_synth = compute_distance_nn(
+        distances_test, distances_synth = compute_distance_nn(
             df_train=X_gt,
             df_test=X_test,
             df_synth=X_syn,
             categorical_cols=self.CATEGORICAL_COLS,
         )
 
-        # take the specified (default 5-th) percentile of distances to closest real record
-        nndr_synth = distances_synth[:, 0] / np.maximum(distances_synth[:, 1], 1e-8)
-        nndr_synth = np.percentile(nndr_synth, self.percentile)
-        return {"score": nndr_synth}
+        # get the ratio of closest real record by the distance to the second closest real record
+        # and take the percentile of that ratio
+        nndr_test = np.percentile(
+            distances_test[:, 0] / np.maximum(distances_test[:, 1], 1e-8),
+            self.percentile,
+        )
+        nndr_synth = np.percentile(
+            distances_synth[:, 0] / np.maximum(distances_synth[:, 1], 1e-8),
+            self.percentile,
+        )
+        return {"nndr_gt": nndr_test, "nndr_synth": nndr_synth}

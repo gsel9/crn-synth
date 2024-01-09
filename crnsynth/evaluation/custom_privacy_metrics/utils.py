@@ -49,10 +49,7 @@ def compute_distance_nn(df_train, df_test, df_synth, categorical_cols=None):
     dist_test = np.square(dist_test)
     dist_synth = np.square(dist_synth)
     bound = np.maximum(np.quantile(dist_test[~np.isnan(dist_test)], 0.95), 1e-8)
-    norm_dist_synth = np.where(
-        dist_synth <= bound,
-        dist_synth / bound,
-        1,
-    )
+    norm_dist_test = np.where(dist_test <= bound, dist_test / bound, 1)
+    norm_dist_synth = np.where(dist_synth <= bound, dist_synth / bound, 1)
 
-    return norm_dist_synth
+    return norm_dist_test, norm_dist_synth

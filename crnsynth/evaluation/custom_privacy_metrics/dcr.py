@@ -64,7 +64,7 @@ class DistanceClosestRecord(PrivacyEvaluator):
     ) -> Dict:
         cache_file = (
             self._workspace
-            / f"sc_metric_cache_{self.type()}_{self.name()}_{X_gt.hash()}_{X_syn.hash()}_{X_test.hash()}_{self._reduction}_{platform.python_version()}.bkp"
+            / f"sc_metric_cache_{self.type()}_{self.name()}_{self.percentile}_{X_gt.hash()}_{X_syn.hash()}_{X_test.hash()}_{self._reduction}_{platform.python_version()}.bkp"
         )
         if self.use_cache(cache_file):
             return load_from_file(cache_file)
@@ -76,7 +76,7 @@ class DistanceClosestRecord(PrivacyEvaluator):
     def _evaluate(
         self, X_gt: DataLoader, X_syn: DataLoader, X_test: DataLoader
     ) -> Dict:
-        distances_synth = compute_distance_nn(
+        distances_test, distances_synth = compute_distance_nn(
             df_train=X_gt,
             df_test=X_test,
             df_synth=X_syn,
@@ -84,6 +84,7 @@ class DistanceClosestRecord(PrivacyEvaluator):
         )
 
         # take the specified (default 5-th) percentile of distances to closest real record
-        dcr_synth = distances_synth[:, 0]
-        dcr_synth = np.percentile(dcr_synth, self.percentile)
-        return {"score": dcr_synth}
+        dcr_test = np.percentile(distances_test[:, 0], self.percentile)
+        dcr_synth = np.percentile(distances_synth[:, 0], self.percentile)
+
+        return {"dcr_gt": dcr_test, "dcr_synth": dcr_synth}
