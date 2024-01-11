@@ -29,7 +29,7 @@ class DistanceClosestRecord(PrivacyEvaluator):
         """
         Args:
             seed (int): Seed for random number generator.
-            percentile (int): Percentile of distances to closest real record to take.
+            quantile (int): Quantile of distances to closest real record to take.
         """
         self.seed = seed
         self.quantile = quantile
