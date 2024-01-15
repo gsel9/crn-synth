@@ -46,6 +46,8 @@ ALL_METRICS = {
         "k-anonymization",
         "identifiability_score",
         "cap_categorical_score",
+        "distance_closest_record",
+        "nearest_neighbor_distance_ratio",
     ],
 }
 
@@ -60,6 +62,7 @@ def score_report(
     sensitive_columns=None,
     reduce="mean",
     cache_dir="./tmp",
+    random_state=42,
 ):
     """Create score report for a single synthetic dataset when compared to real data."""
 
@@ -72,18 +75,13 @@ def score_report(
     }
 
     if data_real_aug is not None:
-        X_gt_aug = GenericDataLoader(data_real_aug)
-        # X_gt_aug.sensitive_features = list(sensitive_columns)
+        X_gt_aug = GenericDataLoader(data_real_aug, random_state=random_state)
 
     if data_synth_aug is not None:
-        X_syn_aug = GenericDataLoader(data_synth_aug)
-        # X_syn_aug.sensitive_features = list(sensitive_columns)
+        X_syn_aug = GenericDataLoader(data_synth_aug, random_state=random_state)
 
-    X_gt = GenericDataLoader(data_real)
-    # X_gt.sensitive_features = list(sensitive_columns)
-
-    X_syn = GenericDataLoader(data_fake)
-    # X_syn.sensitive_features = list(sensitive_columns)
+    X_gt = GenericDataLoader(data_real, random_state=random_state)
+    X_syn = GenericDataLoader(data_fake, random_state=random_state)
 
     if target_column is not None:
         X_gt_aug.target_column = target_column

@@ -19,7 +19,7 @@ class PrivBayesDK(Plugin):
 
     @staticmethod
     def name() -> str:
-        return "privbayes-dk"
+        return "privbayes_dk"
 
     @staticmethod
     def type() -> str:
