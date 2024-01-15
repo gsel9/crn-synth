@@ -9,7 +9,7 @@ from sklearn.preprocessing import OneHotEncoder
 EPS = 1e-8
 
 
-def compute_distance_nn(df_train, df_test, df_synth, quantile=0.05):
+def compute_distance_nn(df_train, df_test, df_synth):
     """Compute distance to closest real record for each synthetic record.
     Normalize using holdout test data."""
 
