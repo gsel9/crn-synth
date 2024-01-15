@@ -17,12 +17,16 @@ def survival_curves_deviation(hybrid_data, real_data, duration_col, event_col):
     kmf_real = fit_kaplanmeier(real_data[duration_col], real_data[event_col])
     kmf_hybrid = fit_kaplanmeier(hybrid_data[duration_col], hybrid_data[event_col])
 
-    # pre-computing integrals allows for unequal number of time points in
-    # real and hybrid data
-    A_real = trapezoid(y=kmf_real.survival_function_.values.squeeze())
-    A_hybrid = trapezoid(y=kmf_hybrid.survival_function_.values.squeeze())
+    Tmax = max(kmf_real.timeline.max(), kmf_hybrid.timeline.max())
+    Tmin = min(kmf_real.timeline.min(), kmf_hybrid.timeline.min())
+    Tmin = max(0, Tmin)
 
-    return abs(A_hybrid - A_real)  # 1 - A_hybrid / A_real
+    time_points = np.linspace(Tmin, Tmax, 200)
+
+    S_hybrid = kmf_hybrid.survival_function_at_times(time_points)
+    S_real = kmf_real.survival_function_at_times(time_points)
+
+    return trapezoid(abs(S_hybrid.values - S_real.values)) / Tmax
 
 
 class SurvivalCurvesDistanceScore(StatisticalEvaluator):

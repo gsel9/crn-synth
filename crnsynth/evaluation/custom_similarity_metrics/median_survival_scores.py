@@ -7,8 +7,6 @@ from typing import Any, Dict
 import numpy as np
 from pydantic import validate_arguments
 from scipy.stats import pearsonr
-
-# from sklearn.metrics import mean_squared_error
 from synthcity.metrics.eval_statistical import StatisticalEvaluator
 from synthcity.plugins.core.dataloader import DataLoader
 
@@ -29,7 +27,7 @@ def median_survival_score(hybrid_data, real_data, duration_col, event_col):
     S_original = km_original.median_survival_time_
     S_hybrid = km_hybrid.median_survival_time_
 
-    return abs(S_hybrid - S_original)  # 1 - (S_hybrid / S_original)
+    return abs(S_hybrid - S_original)
 
 
 class MedianSurvivalScore(StatisticalEvaluator):
@@ -73,12 +71,19 @@ def predicted_median_survival_score(
     fpm_hybrid = fit_flexible_parametric_model(
         hybrid_data, duration_col, fit_cols, event_col=event_col
     )
-
+    # predict median survival for each data point
     t_original = fpm_original.predict_median(real_data[feature_cols]).values
     t_hybrid = fpm_hybrid.predict_median(hybrid_data[feature_cols]).values
 
-    t_original[np.isinf(t_original)] = 0
-    t_hybrid[np.isinf(t_hybrid)] = 0
+    # handle censored data points
+    Tmax = max(fpm_original.durations.max(), fpm_hybrid.durations.max())
+    t_original[np.invert(np.isfinite(t_original))] = Tmax
+    t_hybrid[np.invert(np.isfinite(t_hybrid))] = Tmax
+
+    # baseline generators may produce constant output
+    # here the correlation coefficient is undefined
+    if np.var(t_hybrid) < 1e-12:
+        return 0
 
     return pearsonr(t_original, t_hybrid).statistic
 
