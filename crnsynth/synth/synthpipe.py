@@ -100,6 +100,11 @@ class BaseSynthPipe:
     def fit(self, data_real, data_loader_kwargs=None):
         """Fit generator on processed real data"""
         # only generalize training data to ensure that test data remains in same format as original
+        if self.generator is None:
+            raise ValueError(
+                "Generator not set during init, use '.set_generator(generator)' method to assign a generator."
+            )
+
         if self.generalize:
             data_real = self._generalize_data(data_real)
 
@@ -137,6 +142,10 @@ class BaseSynthPipe:
         data_synth = self.generate(n_records)
         data_synth = self.postprocess_synthetic_data(data_synth)
         return data_synth
+
+    def set_generator(self, generator):
+        """Set generator"""
+        self.generator = generator
 
     def _generalize_data(self, data_real):
         """Generalize data by binning numeric columns or grouping nominal columns"""
