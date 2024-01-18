@@ -71,10 +71,6 @@ class BaseSynthPipe:
     def process_data(self, data_real, data_loader_kwargs=None):
         """Process real data"""
 
-        # save info of real data for creating synthetic data with same format
-        if not self.output_train_format:
-            self._save_input_format(data_real)
-
         # initialize data loader
         data_loader_kwargs = data_loader_kwargs or {}
         loader = self._init_data_loader(data_real, data_loader_kwargs)
