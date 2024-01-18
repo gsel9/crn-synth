@@ -81,13 +81,14 @@ class CustomMetrics(Metrics):
         if metrics is None:
             metrics = Metrics.list()
 
+        # fit and transform on gt and transform on syn
         X_gt, encoders = X_gt.encode()
         X_syn, _ = X_syn.encode(encoders=encoders)
 
         if X_gt_aug:
-            X_gt_aug, encoders = X_gt_aug.encode()  # encoders=encoders)
+            X_gt_aug, encoders_aug = X_gt_aug.encode()
         if X_syn_aug:
-            X_syn_aug, _ = X_syn_aug.encode(encoders=encoders)
+            X_syn_aug, _ = X_syn_aug.encode(encoders=encoders_aug)
 
         scores = ScoreEvaluator()
 
