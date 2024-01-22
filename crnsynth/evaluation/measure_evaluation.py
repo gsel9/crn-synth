@@ -104,13 +104,13 @@ class CustomMetrics(Metrics):
                 _X_syn = X_syn_aug
             elif "sanity" in metric.name():
                 _X_gt = X_gt.train()
-                _X_syn = X_syn.train()
+                _X_syn = X_syn
             elif "stats" in metric.name():  # same as sanity
                 _X_gt = X_gt.train()
-                _X_syn = X_syn.train()
+                _X_syn = X_syn
             elif "detection" in metric.name():  # same as stats, sanity
                 _X_gt = X_gt.train()
-                _X_syn = X_syn.train()
+                _X_syn = X_syn
             else:  # privacy
                 _X_gt = X_gt
                 _X_syn = X_syn
