@@ -68,48 +68,37 @@ class BaseSynthPipe:
         self.column_names_ = []
         self.n_records_ = 0
 
-    def process_data(self, data_real):
+    def process_data(self, data_real, data_loader_kwargs=None):
         """Process real data"""
 
-        # save info of real data for creating synthetic data with same format
-        if not self.output_train_format:
-            self._save_input_format(data_real)
-
-        # split into training and testing data to allow for evaluation with unseen
-        if self.test_size > 0:
-            # stratify based on target column if specified
-            stratify = (
-                None if self.target_column is None else data_real[self.target_column]
-            )
-
-            data_train, data_test = train_test_split(
-                data_real,
-                test_size=self.test_size,
-                stratify=stratify,
-                random_state=self.random_state,
-            )
-        else:
-            data_train = data_real
-            data_test = None
+        # initialize data loader
+        data_loader_kwargs = data_loader_kwargs or {}
+        loader = self._init_data_loader(data_real, data_loader_kwargs)
 
         # save info of training data for creating synthetic data with same format
         if self.output_train_format:
-            self._save_input_format(data_train)
-        return data_train, data_test
+            self._save_input_format(loader.train().dataframe())
+        return loader
 
-    def fit(self, data_real, data_loader_kwargs=None):
+    def fit(self, data_real):
         """Fit generator on processed real data"""
         # only generalize training data to ensure that test data remains in same format as original
+        if isinstance(data_real, GenericDataLoader) or isinstance(
+            data_real, SurvivalAnalysisDataLoader
+        ):
+            data_real = data_real.train().dataframe().copy()
+
+        if self.generator is None:
+            raise ValueError(
+                "Generator not set during init, use '.set_generator(generator)' method to assign a generator."
+            )
+
         if self.generalize:
             data_real = self._generalize_data(data_real)
 
         self._check_input_data(data_real)
 
-        # define loader
-        data_loader_kwargs = data_loader_kwargs or {}
-        loader = self._data_loader_fn(data_real, data_loader_kwargs)
-
-        self.generator.fit(loader)
+        self.generator.fit(data_real)
 
     def generate(self, n_records=None):
         """Generate records using fitted generator"""
@@ -118,25 +107,29 @@ class BaseSynthPipe:
             n_records = self.n_records_
 
         # generate synthetic data
-        data_synth = self.generator.generate(n_records).dataframe()
+        data_synth = self.generator.generate(n_records)
 
         # reverse generalization
         if self.generalize:
-            data_synth = self._reverse_generalization(data_synth)
+            data_synth.data = self._reverse_generalization(data_synth.dataframe())
         return data_synth
 
     def postprocess_synthetic_data(self, data_synth):
         """Postprocess synthetic data"""
-        data_synth = self._reorder_columns(data_synth)
+        data_synth.data = self._reorder_columns(data_synth.dataframe())
         return data_synth
 
     def run(self, data_real, n_records=None):
         """Run all steps in synthesis pipeline. User can run these steps one by one themselves as well."""
-        data_real, _ = self.process_data(data_real)
+        data_real = self.process_data(data_real)
         self.fit(data_real)
         data_synth = self.generate(n_records)
         data_synth = self.postprocess_synthetic_data(data_synth)
         return data_synth
+
+    def set_generator(self, generator):
+        """Set generator"""
+        self.generator = generator
 
     def _generalize_data(self, data_real):
         """Generalize data by binning numeric columns or grouping nominal columns"""
@@ -223,7 +216,7 @@ class BaseSynthPipe:
                     data_real, column, min_support=0.05, verbose=self.verbose
                 )
 
-    def _data_loader_fn(self, data, kwargs):
+    def _init_data_loader(self, data, kwargs):
         """Use data loader to load data into generator"""
         name = self.data_loader_name
 
