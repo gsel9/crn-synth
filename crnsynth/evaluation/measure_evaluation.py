@@ -10,11 +10,7 @@ from pydantic import validate_arguments
 from synthcity.metrics import Metrics
 from synthcity.metrics.eval import standard_metrics
 from synthcity.metrics.scores import ScoreEvaluator
-from synthcity.plugins.core.dataloader import (
-    DataLoader,
-    GenericDataLoader,
-    create_from_info,
-)
+from synthcity.plugins.core.dataloader import DataLoader
 
 
 class CustomMetrics(Metrics):
@@ -73,60 +69,65 @@ class CustomMetrics(Metrics):
                 f"Invalid task type {task_type}. Supported: {supported_tasks}"
             )
 
-        if not isinstance(X_gt, DataLoader):
-            X_gt = GenericDataLoader(X_gt)
-        if not isinstance(X_syn, DataLoader):
-            X_syn = create_from_info(X_syn, X_gt.info())
-
-        if metrics is None:
-            metrics = Metrics.list()
-
         # fit and transform on gt and transform on syn
         X_gt, encoders = X_gt.encode()
         X_syn, _ = X_syn.encode(encoders=encoders)
 
-        if X_gt_aug:
-            X_gt_aug, _ = X_gt_aug.encode(encoders=encoders)
-        if X_syn_aug:
-            X_syn_aug, _ = X_syn_aug.encode(encoders=encoders)
+        if X_gt_aug and X_syn_aug:
+            X_gt_aug, encoders_aug = X_gt_aug.encode()
+            X_syn_aug, _ = X_syn_aug.encode(encoders=encoders_aug)
+
+        eval_cnt = min(
+            len(X_gt.train()),
+            len(X_syn.train()),
+            len(X_gt_aug.train()),
+            len(X_syn_aug.train()),
+        )
 
         scores = ScoreEvaluator()
 
-        eval_cnt = min(len(X_gt), len(X_syn))
+        if metrics is None:
+            metrics = Metrics.list()
+
         for metric in standard_metrics:
             if metric.type() not in metrics:
                 continue
             if metric.name() not in metrics[metric.type()]:
                 continue
+
+            # prep metric input data
             if "augmented" in metric.name():
-                scores.queue(
-                    metric(
-                        reduction="mean",
-                        n_histogram_bins=10,
-                        task_type=task_type,
-                        random_state=random_state,
-                        workspace=workspace,
-                        use_cache=use_cache,
-                    ),
-                    X_gt_aug.sample(eval_cnt),
-                    X_syn_aug.sample(eval_cnt),
-                )
-            else:
-                scores.queue(
-                    metric(
-                        reduction="mean",
-                        n_histogram_bins=10,
-                        task_type=task_type,
-                        random_state=random_state,
-                        workspace=workspace,
-                        use_cache=use_cache,
-                    ),
-                    X_gt.sample(eval_cnt),
-                    X_syn.sample(eval_cnt),
-                )
+                _X_gt = X_gt_aug
+                _X_syn = X_syn_aug
+            elif "performance" in metric.name():
+                _X_gt = X_gt_aug
+                _X_syn = X_syn_aug
+            elif "sanity" in metric.name():
+                _X_gt = X_gt.train()
+                _X_syn = X_syn
+            elif "stats" in metric.name():  # same as sanity
+                _X_gt = X_gt.train()
+                _X_syn = X_syn
+            elif "detection" in metric.name():  # same as stats, sanity
+                _X_gt = X_gt.train()
+                _X_syn = X_syn
+            else:  # privacy
+                _X_gt = X_gt
+                _X_syn = X_syn
 
+            scores.queue(
+                metric(
+                    reduction="mean",
+                    n_histogram_bins=10,
+                    task_type=task_type,
+                    random_state=random_state,
+                    workspace=workspace,
+                    use_cache=use_cache,
+                ),
+                _X_gt.sample(eval_cnt),
+                _X_syn.sample(eval_cnt),
+            )
         scores.compute()
-
         return scores.to_dataframe()
 
     @staticmethod
