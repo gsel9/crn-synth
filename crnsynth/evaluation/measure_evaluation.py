@@ -13,6 +13,27 @@ from synthcity.metrics.scores import ScoreEvaluator
 from synthcity.plugins.core.dataloader import DataLoader
 
 
+def _get_dataset_for_metric(metric, X_gt, X_syn, X_gt_aug, X_syn_aug):
+    # including data for a original hold-out set
+    if metric.type() == "privacy":
+        return X_gt, X_syn
+
+    # need both outcomes of target variable
+    if metric.type() == "performance":
+        return X_gt_aug, X_syn_aug
+
+    # need both outcomes of target variable
+    # NOTE: under `stats`` category
+    if "augmented" in metric.name():
+        return X_gt_aug, X_syn_aug
+
+    # only relevant to compare data used for synthetization
+    if metric.type() in ["sanity", "stats", "detection"]:
+        return X_gt.train(), X_syn
+
+    raise ValueError(f"Unknown metric type: {metric.type()}")
+
+
 class CustomMetrics(Metrics):
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def evaluate(
@@ -95,25 +116,9 @@ class CustomMetrics(Metrics):
             if metric.name() not in metrics[metric.type()]:
                 continue
 
-            # prep metric input data
-            if "augmented" in metric.name():
-                _X_gt = X_gt_aug
-                _X_syn = X_syn_aug
-            elif "performance" in metric.name():
-                _X_gt = X_gt_aug
-                _X_syn = X_syn_aug
-            elif "sanity" in metric.name():
-                _X_gt = X_gt.train()
-                _X_syn = X_syn
-            elif "stats" in metric.name():  # same as sanity
-                _X_gt = X_gt.train()
-                _X_syn = X_syn
-            elif "detection" in metric.name():  # same as stats, sanity
-                _X_gt = X_gt.train()
-                _X_syn = X_syn
-            else:  # privacy
-                _X_gt = X_gt
-                _X_syn = X_syn
+            _X_gt, _X_syn = _get_dataset_for_metric(
+                metric, X_gt, X_syn, X_gt_aug, X_syn_aug
+            )
 
             scores.queue(
                 metric(
@@ -127,6 +132,7 @@ class CustomMetrics(Metrics):
                 _X_gt.sample(eval_cnt),
                 _X_syn.sample(eval_cnt),
             )
+
         scores.compute()
         return scores.to_dataframe()
 

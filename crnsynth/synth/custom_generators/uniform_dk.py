@@ -15,7 +15,7 @@ class UniformDK(Plugin):
     def __init__(self, epsilon=1, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.epsilon = epsilon
-        self.model = UniformSynthesizer(epsilon=epsilon)
+        self.model = UniformSynthesizer(epsilon=epsilon, verbose=0)
 
     @staticmethod
     def name() -> str:
