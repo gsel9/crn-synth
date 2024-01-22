@@ -71,10 +71,6 @@ class BaseSynthPipe:
     def process_data(self, data_real, data_loader_kwargs=None):
         """Process real data"""
 
-        # save info of real data for creating synthetic data with same format
-        if not self.output_train_format:
-            self._save_input_format(data_real)
-
         # initialize data loader
         data_loader_kwargs = data_loader_kwargs or {}
         loader = self._init_data_loader(data_real, data_loader_kwargs)
@@ -111,21 +107,21 @@ class BaseSynthPipe:
             n_records = self.n_records_
 
         # generate synthetic data
-        data_synth = self.generator.generate(n_records).dataframe()
+        data_synth = self.generator.generate(n_records)
 
         # reverse generalization
         if self.generalize:
-            data_synth = self._reverse_generalization(data_synth)
+            data_synth.data = self._reverse_generalization(data_synth.dataframe())
         return data_synth
 
     def postprocess_synthetic_data(self, data_synth):
         """Postprocess synthetic data"""
-        data_synth = self._reorder_columns(data_synth)
+        data_synth.data = self._reorder_columns(data_synth.dataframe())
         return data_synth
 
     def run(self, data_real, n_records=None):
         """Run all steps in synthesis pipeline. User can run these steps one by one themselves as well."""
-        data_real, _ = self.process_data(data_real)
+        data_real = self.process_data(data_real)
         self.fit(data_real)
         data_synth = self.generate(n_records)
         data_synth = self.postprocess_synthetic_data(data_synth)
