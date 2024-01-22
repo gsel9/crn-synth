@@ -68,35 +68,49 @@ class BaseSynthPipe:
         self.column_names_ = []
         self.n_records_ = 0
 
-    def process_data(self, data_real, data_loader_kwargs=None):
+    def get_dataloader(self):
+        """Use data loader to load data into generator"""
+
+        name = self.data_loader_name
+
+        if name == "generic":
+            loader_fn = GenericDataLoader
+
+        elif name == "survival":
+            loader_fn = SurvivalAnalysisDataLoader
+
+        else:
+            raise ValueError(f"Invalid data loader {name}")
+
+        if self.verbose > 0:
+            print(f"Using data loader for {name}")
+
+        return loader_fn
+
+    def cast_to_dataloader(self, data, loader_fn=None, **kwargs):
+        """Use data loader to load data into generator"""
+
+        if loader_fn is None:
+            loader_fn = self.get_dataloader()
+
+        return loader_fn(data, **kwargs)
+
+    def process_data(self, data):
         """Process real data"""
 
-        # initialize data loader
-        data_loader_kwargs = data_loader_kwargs or {}
-        loader = self._init_data_loader(data_real, data_loader_kwargs)
-
-        # save info of training data for creating synthetic data with same format
-        if self.output_train_format:
-            self._save_input_format(loader.train().dataframe())
-        return loader
+        raise NotImplementedError("Should implement .process_data()")
 
     def fit(self, data_real):
         """Fit generator on processed real data"""
-        # only generalize training data to ensure that test data remains in same format as original
-        if isinstance(data_real, GenericDataLoader) or isinstance(
-            data_real, SurvivalAnalysisDataLoader
-        ):
-            data_real = data_real.train().dataframe().copy()
+
+        data_real = self._check_input_data(data_real)
 
         if self.generator is None:
             raise ValueError(
-                "Generator not set during init, use '.set_generator(generator)' method to assign a generator."
+                """Generator not set during init, use \\
+                             '.set_generator(generator)' method to \\
+                              assign a generator."""
             )
-
-        if self.generalize:
-            data_real = self._generalize_data(data_real)
-
-        self._check_input_data(data_real)
 
         self.generator.fit(data_real)
 
@@ -109,15 +123,12 @@ class BaseSynthPipe:
         # generate synthetic data
         data_synth = self.generator.generate(n_records)
 
-        # reverse generalization
-        if self.generalize:
-            data_synth.data = self._reverse_generalization(data_synth.dataframe())
         return data_synth
 
     def postprocess_synthetic_data(self, data_synth):
         """Postprocess synthetic data"""
-        data_synth.data = self._reorder_columns(data_synth.dataframe())
-        return data_synth
+
+        raise NotImplementedError("Should implement .postprocess_synthetic_data()")
 
     def run(self, data_real, n_records=None):
         """Run all steps in synthesis pipeline. User can run these steps one by one themselves as well."""
@@ -133,26 +144,15 @@ class BaseSynthPipe:
 
     def _generalize_data(self, data_real):
         """Generalize data by binning numeric columns or grouping nominal columns"""
-        # user needs to implement their own generalization method
+
         if self.generalize:
-            if type(self)._generalize_data == BaseSynthPipe._generalize_data:
-                raise NotImplementedError(
-                    "When 'generalize' is set to True, you must implement the '_generalize_data' method in your subclass."
-                )
-        return data_real
+            raise NotImplementedError("Should implement ._generalize_data()")
 
     def _reverse_generalization(self, data_synth):
         """Reverse generalization by de-binning numeric columns or de-grouping nominal columns"""
-        # user needs to implement their own generalization method
+
         if self.generalize:
-            if (
-                type(self)._reverse_generalization
-                == BaseSynthPipe._reverse_generalization
-            ):
-                raise NotImplementedError(
-                    "When 'generalize' is set to True, you must implement the '_reverse_generalization' method in your subclass."
-                )
-        return data_synth
+            raise NotImplementedError("Should implement ._reverse_generalization()")
 
     def _reorder_columns(self, data_synth):
         """Reorder columns to original order of real data"""
@@ -197,39 +197,19 @@ class BaseSynthPipe:
             True,
             False,
         ], "Output train format must be True or False"
-        assert (
-            self.test_size >= 0 and self.test_size <= 1
-        ), "Test size must be between 0 and 1"
-        assert self.generalize in [True, False], "Generalize must be True or False"
-        assert self.data_loader_name in [
-            "generic",
-            "survival",
-        ], "Data loader must be 'generic' or 'survival'"
         assert self.warn in [True, False], "Warn must be True or False"
 
     def _check_input_data(self, data_real):
         """Check  data for any potential privacy risks"""
         # check rare categories - turn off by setting warn to False
+
+        if not isinstance(data_real, (GenericDataLoader, SurvivalAnalysisDataLoader)):
+            raise ValueError("Input data should be a data loader!")
+
         if self.warn:
             for column in data_real.columns:
                 check.check_rare_categories(
                     data_real, column, min_support=0.05, verbose=self.verbose
                 )
 
-    def _init_data_loader(self, data, kwargs):
-        """Use data loader to load data into generator"""
-        name = self.data_loader_name
-
-        if name == "generic":
-            loader_fn = GenericDataLoader
-
-        elif name == "survival":
-            loader_fn = SurvivalAnalysisDataLoader
-
-        else:
-            raise ValueError(f"Invalid data loader {name}")
-
-        if self.verbose > 0:
-            print(f"Using data loader for {name}")
-
-        return loader_fn(data, **kwargs)
+        return data_real
