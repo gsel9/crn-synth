@@ -24,7 +24,7 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
     CATEGORICAL_COLS = None
     FRAC_SENSITIVE = None
 
-    def __init__(self, seed=42, quantile=0.05, **kwargs: Any) -> None:
+    def __init__(self, seed=42, quantile=0.5, **kwargs: Any) -> None:
         super().__init__(default_metric="score", **kwargs)
         """
         Args:

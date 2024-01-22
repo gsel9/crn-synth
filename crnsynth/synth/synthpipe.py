@@ -70,7 +70,6 @@ class BaseSynthPipe:
 
     def process_data(self, data_real, data_loader_kwargs=None):
         """Process real data"""
-
         # save info of real data for creating synthetic data with same format
         if not self.output_train_format:
             self._save_input_format(data_real)
@@ -169,6 +168,7 @@ class BaseSynthPipe:
         # find columns that are missing or extra in synthetic data
         columns_synth_missing = set(column_names) - set(data_synth.columns)
         columns_synth_extra = set(data_synth.columns) - set(column_names)
+
         if self.warn:
             if columns_synth_missing:
                 warnings.warn(
@@ -184,8 +184,7 @@ class BaseSynthPipe:
                 )
 
         # reorder columns
-        data_synth = data_synth[column_order]
-        return data_synth
+        return data_synth[column_order]
 
     def _save_input_format(self, data_real):
         """Save info of input data to ensure synth data can have the same format"""

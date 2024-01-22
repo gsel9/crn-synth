@@ -18,8 +18,8 @@ def hybridize_data(data_synth, data_real, target_col, target_val):
     return pd.concat([data_synth, partial_real], axis=0, ignore_index=True)
 
 
-def concat_data(datasets):
-    concated = pd.concat(datasets, axis=0, ignore_index=True)
+def concat_data(datasets, ignore_index=True):
+    concated = pd.concat(datasets, axis=0, ignore_index=ignore_index)
 
     # sanity checks
     assert concated.shape[0] == sum([data.shape[0] for data in datasets])
