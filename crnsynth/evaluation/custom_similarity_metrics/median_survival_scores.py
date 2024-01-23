@@ -61,19 +61,25 @@ class MedianSurvivalScore(StatisticalEvaluator):
 
 
 def predicted_median_survival_score(
-    hybrid_data, real_data, feature_cols, duration_col, event_col=None
+    hybrid_data_train,
+    hybrid_data_test,
+    real_data_train,
+    real_data_test,
+    feature_cols,
+    duration_col,
+    event_col=None,
 ):
     fit_cols = list(feature_cols) + [event_col, duration_col]
 
     fpm_original = fit_flexible_parametric_model(
-        real_data, duration_col, fit_cols, event_col=event_col
+        real_data_train, duration_col, fit_cols, event_col=event_col
     )
     fpm_hybrid = fit_flexible_parametric_model(
-        hybrid_data, duration_col, fit_cols, event_col=event_col
+        hybrid_data_train, duration_col, fit_cols, event_col=event_col
     )
     # predict median survival for each data point
-    t_original = fpm_original.predict_median(real_data[feature_cols]).values
-    t_hybrid = fpm_hybrid.predict_median(hybrid_data[feature_cols]).values
+    t_original = fpm_original.predict_median(real_data_test[feature_cols]).values
+    t_hybrid = fpm_hybrid.predict_median(hybrid_data_test[feature_cols]).values
 
     # handle censored data points
     Tmax = max(fpm_original.durations.max(), fpm_hybrid.durations.max())
@@ -118,8 +124,10 @@ class PredictedMedianSurvivalScore(StatisticalEvaluator):
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _evaluate(self, X_gt_aug: DataLoader, X_syn_aug: DataLoader) -> Dict:
         score = predicted_median_survival_score(
-            hybrid_data=X_syn_aug.data,
-            real_data=X_gt_aug.data,
+            hybrid_data_train=X_syn_aug.train().data,
+            hybrid_data_test=X_syn_aug.test().data,
+            real_data_train=X_gt_aug.train().data,
+            real_data_test=X_gt_aug.test().data,
             feature_cols=self.FEATURE_COLS,
             duration_col=self.DURATION_COL,
             event_col=self.EVENT_COL,

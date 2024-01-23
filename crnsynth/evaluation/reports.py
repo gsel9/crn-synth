@@ -7,7 +7,7 @@ import torch  # import torch to avoid segmentation fault error in TSD
 from synthcity.metrics.scores import ScoreEvaluator
 
 # TODO: need to adapt dataloader to surv, generic etc
-from synthcity.plugins.core.dataloader import GenericDataLoader
+from synthcity.plugins.core.dataloader import GenericDataLoader, create_from_info
 
 from crnsynth.configs import config
 from crnsynth.evaluation.measure_evaluation import CustomMetrics
@@ -74,18 +74,20 @@ def score_report(
         "performance": ALL_METRICS["performance"],
     }
 
-    if data_real_aug is not None:
-        X_gt_aug = GenericDataLoader(data_real_aug, random_state=random_state)
+    # NOTE: should remove this and instead pass ready dataloaders
+    X_gt = GenericDataLoader(
+        data_real, target_column=target_column, random_state=random_state
+    )
 
-    if data_synth_aug is not None:
-        X_syn_aug = GenericDataLoader(data_synth_aug, random_state=random_state)
+    X_syn = create_from_info(data_fake, X_gt.info())
+    X_syn.random_state = random_state
 
-    X_gt = GenericDataLoader(data_real, random_state=random_state)
-    X_syn = GenericDataLoader(data_fake, random_state=random_state)
+    X_gt_aug = GenericDataLoader(
+        data_real_aug, target_column=target_column, random_state=random_state
+    )
 
-    if target_column is not None:
-        X_gt_aug.target_column = target_column
-        X_syn_aug.target_column = target_column
+    X_syn_aug = create_from_info(data_synth_aug, X_gt_aug.info())
+    X_syn_aug.random_state = random_state
 
     eval = CustomMetrics.evaluate(
         X_gt=X_gt,
@@ -99,7 +101,6 @@ def score_report(
     remove_dir(cache_dir)
 
     scores = eval[reduce].to_dict()
-
     errors = eval["errors"].to_dict()
     duration = eval["durations"].to_dict()
     direction = eval["direction"].to_dict()
@@ -120,7 +121,6 @@ def create_score_reports(
     metrics = metrics if metrics is not None else ALL_METRICS
 
     # load real data
-    print(dataset_name)
     data_real = pd.read_csv(config.PATH_DATA[dataset_name], index_col=0)
 
     # get paths to synthetic data either through specified generator_names or all csv's within folder
