@@ -24,7 +24,7 @@ class DistanceClosestRecord(PrivacyEvaluator):
     CATEGORICAL_COLS = None
     FRAC_SENSITIVE = None
 
-    def __init__(self, seed=42, quantile=0.5, **kwargs: Any) -> None:
+    def __init__(self, seed=42, quantile=0.5, metric="gower", **kwargs: Any) -> None:
         super().__init__(default_metric="score", **kwargs)
         """
         Args:
@@ -33,6 +33,7 @@ class DistanceClosestRecord(PrivacyEvaluator):
         """
         self.seed = seed
         self.quantile = quantile
+        self.metric = metric
 
     @property
     def n_categorical(self):
@@ -84,6 +85,8 @@ class DistanceClosestRecord(PrivacyEvaluator):
             df_train=X_train.data,
             df_test=X_test.data,
             df_synth=X_syn.data,
+            categorical_columns=self.CATEGORICAL_COLS,
+            metric=self.metric,
         )
 
         # take the specified (default 5-th) percentile of distances to closest real record
