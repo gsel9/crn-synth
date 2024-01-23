@@ -24,7 +24,7 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
     CATEGORICAL_COLS = None
     FRAC_SENSITIVE = None
 
-    def __init__(self, seed=42, quantile=0.5, **kwargs: Any) -> None:
+    def __init__(self, seed=42, quantile=0.5, metric="gower", **kwargs: Any) -> None:
         super().__init__(default_metric="score", **kwargs)
         """
         Args:
@@ -33,6 +33,7 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
         """
         self.seed = seed
         self.quantile = quantile
+        self.metric = metric
 
     @property
     def n_categorical(self):
@@ -84,6 +85,8 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
             df_train=X_train.data,
             df_test=X_test.data,
             df_synth=X_syn.data,
+            categorical_columns=self.CATEGORICAL_COLS,
+            metric=self.metric,
         )
 
         # get the ratio of closest real record by the distance to the second closest real record

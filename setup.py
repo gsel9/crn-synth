@@ -12,6 +12,7 @@ setup(
         "synthcity",
         "diffprivlib>=0.6.3",
         "sdmetrics",
+        "gower",
     ],
     extras_require={"interactive": ["matplotlib", "jupyter"]},
 )
