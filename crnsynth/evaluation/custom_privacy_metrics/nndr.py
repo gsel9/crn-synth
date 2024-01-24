@@ -23,6 +23,7 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
 
     CATEGORICAL_COLS = None
     FRAC_SENSITIVE = None
+    EPS = 1e-8
 
     def __init__(self, seed=42, quantile=0.5, metric="gower", **kwargs: Any) -> None:
         super().__init__(default_metric="score", **kwargs)
@@ -90,13 +91,17 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
         )
 
         # get the ratio of closest real record by the distance to the second closest real record
-        # and take the quantile of that ratio
+        # and take the quantile of that ratio - note add smoothing factor:
+        # to numerator in case of 0 distance (exact match) which otherwise would result in NNDR of 0 regardless of second closest distance
+        # to denominator to avoid division by 0
         nndr_gt = np.quantile(
-            distances_test[:, 0] / np.maximum(distances_test[:, 1], 1e-8),
+            np.maximum(distances_test[:, 0], self.EPS)
+            / np.maximum(distances_test[:, 1], self.EPS),
             self.quantile,
         )
         nndr_synth = np.quantile(
-            distances_synth[:, 0] / np.maximum(distances_synth[:, 1], 1e-8),
+            np.maximum(distances_synth[:, 0], self.EPS)
+            / np.maximum(distances_synth[:, 1], self.EPS),
             self.quantile,
         )
         return {"gt": nndr_gt, "syn": nndr_synth}
