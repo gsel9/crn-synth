@@ -25,16 +25,26 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
     FRAC_SENSITIVE = None
     EPS = 1e-8
 
-    def __init__(self, seed=42, quantile=0.5, metric="gower", **kwargs: Any) -> None:
+    def __init__(
+        self,
+        seed=42,
+        quantile=0.5,
+        distance_metric="gower",
+        n_neighbors=5,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(default_metric="score", **kwargs)
         """
         Args:
             seed (int): Seed for random number generator.
             quantile (int): Quantile to take distances to closest real record to take.
+            distance_metric (str): Distance metric to use for computing nearest neighbors.
+            n_neighbors (int): Number of nearest neighbors to use for computing NNDR.
         """
         self.seed = seed
         self.quantile = quantile
-        self.metric = metric
+        self.metric = distance_metric
+        self.n_neighbors = n_neighbors
 
     @property
     def n_categorical(self):
@@ -87,7 +97,9 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
             df_test=X_test.data,
             df_synth=X_syn.data,
             categorical_columns=self.CATEGORICAL_COLS,
-            metric=self.metric,
+            n_neighbors=self.n_neighbors,
+            normalize=False,
+            distance_metric=self.metric,
         )
 
         # get the ratio of closest real record by the distance to the second closest real record
@@ -96,7 +108,7 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
         # to denominator to avoid division by 0
         nndr_gt = np.quantile(
             np.maximum(distances_test[:, 0], self.EPS)
-            / np.maximum(distances_test[:, 1], self.EPS),
+            / np.maximum(distances_test[:, self.n_neighbors - 1], self.EPS),
             self.quantile,
         )
         nndr_synth = np.quantile(
