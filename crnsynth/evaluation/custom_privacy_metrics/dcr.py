@@ -23,6 +23,7 @@ class DistanceClosestRecord(PrivacyEvaluator):
 
     CATEGORICAL_COLS = None
     FRAC_SENSITIVE = None
+    EPS = 1e-8
 
     def __init__(self, seed=42, quantile=0.5, metric="gower", **kwargs: Any) -> None:
         super().__init__(default_metric="score", **kwargs)
@@ -89,7 +90,18 @@ class DistanceClosestRecord(PrivacyEvaluator):
             metric=self.metric,
         )
 
-        # take the specified (default 5-th) percentile of distances to closest real record
-        dcr_gt = np.quantile(distances_test[:, 0], self.quantile)
-        dcr_synth = np.quantile(distances_synth[:, 0], self.quantile)
+        dist_test = distances_test[:, 0]
+        dist_synth = distances_synth[:, 0]
+
+        # normalize DCR using a quantile of test data
+        # use smoothing factor to avoid division by zero
+        bound = np.maximum(
+            np.quantile(dist_test[~np.isnan(distances_test)], 0.95), self.EPS
+        )
+        norm_dist_test = np.where(dist_test <= bound, dist_test / bound, 1)
+        norm_dist_synth = np.where(dist_synth <= bound, dist_synth / bound, 1)
+
+        # take the quantile of distances to closest real record
+        dcr_gt = np.quantile(norm_dist_test, self.quantile)
+        dcr_synth = np.quantile(norm_dist_synth, self.quantile)
         return {"gt": dcr_gt, "syn": dcr_synth}

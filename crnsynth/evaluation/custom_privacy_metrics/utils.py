@@ -7,8 +7,6 @@ from sklearn.impute import SimpleImputer
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import OneHotEncoder
 
-EPS = 1e-8
-
 
 def compute_distance_nn(
     df_train, df_test, df_synth, categorical_columns, metric="gower"
@@ -55,12 +53,6 @@ def compute_distance_nn(
     else:
         dist_test, dist_synth = nn_distance(df_train, df_test, df_synth, metric)
 
-    # normalize DCR using a quantile of test data
-    # use smoothing factor to avoid division by zero
     dist_test = np.square(dist_test)
     dist_synth = np.square(dist_synth)
-    bound = np.maximum(np.quantile(dist_test[~np.isnan(dist_test)], 0.95), EPS)
-    norm_dist_test = np.where(dist_test <= bound, dist_test / bound, 1)
-    norm_dist_synth = np.where(dist_synth <= bound, dist_synth / bound, 1)
-
-    return norm_dist_test, norm_dist_synth
+    return dist_test, dist_synth
