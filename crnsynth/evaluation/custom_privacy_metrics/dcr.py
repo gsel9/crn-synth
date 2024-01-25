@@ -12,6 +12,22 @@ from synthcity.utils.serialization import load_from_file, save_to_file
 from crnsynth.evaluation.custom_privacy_metrics.utils import compute_distance_nn
 
 
+def compute_closest_distances(
+    df_train, df_test, df_synth, categorical_columns, distance_metric="gower"
+):
+    distances_test, distances_synth = compute_distance_nn(
+        df_train=df_train,
+        df_test=df_test,
+        df_synth=df_synth,
+        categorical_columns=categorical_columns,
+        n_neighbors=1,
+        normalize=True,
+        distance_metric=distance_metric,
+    )
+
+    return distances_test, distances_synth
+
+
 class DistanceClosestRecord(PrivacyEvaluator):
     """Measures the distance from synthetic records to the closest real record.
     The lower the distance, the more similar the synthetic data is to the real data.
@@ -82,13 +98,12 @@ class DistanceClosestRecord(PrivacyEvaluator):
     def _evaluate(
         self, X_train: DataLoader, X_test: DataLoader, X_syn: DataLoader
     ) -> Dict:
-        distances_test, distances_synth = compute_distance_nn(
+        # compute distances to closest real record
+        distances_test, distances_synth = compute_closest_distances(
             df_train=X_train.data,
             df_test=X_test.data,
             df_synth=X_syn.data,
             categorical_columns=self.CATEGORICAL_COLS,
-            n_neighbors=1,
-            normalize=True,
             distance_metric=self.metric,
         )
 
