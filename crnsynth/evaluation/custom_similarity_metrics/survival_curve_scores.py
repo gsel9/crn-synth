@@ -38,7 +38,7 @@ class SurvivalCurvesDistanceScore(StatisticalEvaluator):
 
     @staticmethod
     def name() -> str:
-        return "survival_curves_distance_augmented_score"
+        return "survival_curves_distance_score"
 
     @staticmethod
     def direction() -> str:

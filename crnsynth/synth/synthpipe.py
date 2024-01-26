@@ -114,6 +114,7 @@ class BaseSynthPipe:
 
         self.generator.fit(data_real)
 
+    # NOTE: should output dataloader for consistency
     def generate(self, n_records=None):
         """Generate records using fitted generator"""
         # use same number of records as real data if not specified

@@ -6,7 +6,6 @@ from synthcity.plugins.core.dataloader import DataLoader, GenericDataLoader
 from synthcity.plugins.core.distribution import Distribution
 from synthcity.plugins.core.plugin import Plugin
 from synthcity.plugins.core.schema import Schema
-from synthesis.synthesizers.marginal import MarginalSynthesizer
 
 
 class DummySampler(Plugin):
@@ -18,6 +17,7 @@ class DummySampler(Plugin):
     CAUTION: do not release output when based on sensitive data, due to privacy risk."""
 
     def __init__(self, **kwargs: Any) -> None:
+        # NOTE: strict=False ignores post-synthesis filtering
         super().__init__(**kwargs)
 
     @staticmethod

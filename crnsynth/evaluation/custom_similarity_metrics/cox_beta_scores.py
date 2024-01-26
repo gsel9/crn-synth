@@ -40,12 +40,11 @@ def cox_beta_score(
     Returns:
         Score value.
     """
-
     hybrid_data["weights"] = propensity_weights(
-        hybrid_data[feature_cols], hybrid_data[target_col], clip_value
+        hybrid_data[feature_cols].values, hybrid_data[target_col].values, clip_value
     )
     real_data["weights"] = propensity_weights(
-        real_data[feature_cols], real_data[target_col], clip_value
+        real_data[feature_cols].values, real_data[target_col].values, clip_value
     )
 
     cox_cols = [target_col, duration_col, "weights"]

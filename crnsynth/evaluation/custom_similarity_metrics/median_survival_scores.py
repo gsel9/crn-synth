@@ -6,13 +6,13 @@ from typing import Any, Dict
 
 import numpy as np
 from pydantic import validate_arguments
-from scipy.stats import pearsonr
+from scipy.integrate import trapezoid
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 from synthcity.metrics.eval_statistical import StatisticalEvaluator
 from synthcity.plugins.core.dataloader import DataLoader
 
 from .utils import fit_flexible_parametric_model, fit_kaplanmeier
-
-# from crnsynth.process.util import infmax
 
 
 def median_survival_score(hybrid_data, real_data, duration_col, event_col):
@@ -27,7 +27,9 @@ def median_survival_score(hybrid_data, real_data, duration_col, event_col):
     S_original = km_original.median_survival_time_
     S_hybrid = km_hybrid.median_survival_time_
 
-    return abs(S_hybrid - S_original)
+    # scale to unit range
+    Tmax = max(km_original.timeline.max(), km_hybrid.timeline.max())
+    return abs(S_hybrid - S_original) / Tmax
 
 
 class MedianSurvivalScore(StatisticalEvaluator):
@@ -41,7 +43,7 @@ class MedianSurvivalScore(StatisticalEvaluator):
 
     @staticmethod
     def name() -> str:
-        return "median_survival_augmented_score"
+        return "median_survival_score"
 
     @staticmethod
     def direction() -> str:
@@ -61,46 +63,49 @@ class MedianSurvivalScore(StatisticalEvaluator):
 
 
 def predicted_median_survival_score(
-    hybrid_data_train,
-    hybrid_data_test,
-    real_data_train,
-    real_data_test,
+    synth_data,
+    real_data,
     feature_cols,
     duration_col,
     event_col=None,
 ):
     fit_cols = list(feature_cols) + [event_col, duration_col]
 
-    fpm_original = fit_flexible_parametric_model(
+    real_data_train = real_data.train().data
+    real_data_test = real_data.test().data
+    synth_data = synth_data.data
+
+    fpm_real = fit_flexible_parametric_model(
         real_data_train, duration_col, fit_cols, event_col=event_col
     )
-    fpm_hybrid = fit_flexible_parametric_model(
-        hybrid_data_train, duration_col, fit_cols, event_col=event_col
+    fpm_synth = fit_flexible_parametric_model(
+        synth_data, duration_col, fit_cols, event_col=event_col
     )
+
+    Tmax = max(real_data.data[duration_col].max(), synth_data[duration_col].max())
+    Tmin = min(real_data.data[duration_col].min(), synth_data[duration_col].min())
+    Tmin = max(0, Tmin)
+
+    times = np.linspace(Tmin, Tmax, 200)
+
     # predict median survival for each data point
-    t_original = fpm_original.predict_median(real_data_test[feature_cols]).values
-    t_hybrid = fpm_hybrid.predict_median(hybrid_data_test[feature_cols]).values
+    S_real = fpm_real.predict_survival_function(real_data_test[fit_cols], times=times)
+    S_synth = fpm_synth.predict_survival_function(real_data_test[fit_cols], times=times)
 
-    # handle censored data points
-    Tmax = max(fpm_original.durations.max(), fpm_hybrid.durations.max())
-    t_original[np.invert(np.isfinite(t_original))] = Tmax
-    t_hybrid[np.invert(np.isfinite(t_hybrid))] = Tmax
+    if np.invert(np.isfinite(S_real)).any():
+        raise ValueError("predicted median: non-finite in S_real")
+    if np.invert(np.isfinite(S_synth)).any():
+        raise ValueError("predicted median: non-finte in S_synth")
 
-    # baseline generators may produce constant output
-    # here the correlation coefficient is undefined
-    if np.var(t_hybrid) < 1e-12:
-        return 0
-
-    return pearsonr(t_original, t_hybrid).statistic
+    score = trapezoid(abs(S_synth.values - S_real.values)) / Tmax
+    return score
 
 
 class PredictedMedianSurvivalScore(StatisticalEvaluator):
     """Predicted median survival score."""
 
-    CLIP_VALUE = None
     FEATURE_COLS = None
     DURATION_COL = None
-    TARGET_COL = None
     EVENT_COL = None
 
     def __init__(self, **kwargs: Any) -> None:
@@ -108,11 +113,11 @@ class PredictedMedianSurvivalScore(StatisticalEvaluator):
 
     @staticmethod
     def name() -> str:
-        return "predicted_median_survival_augmented_score"
+        return "predicted_median_survival_score"
 
     @staticmethod
     def direction() -> str:
-        return "maximize"
+        return "minimize"
 
     @classmethod
     def update_cls_params(cls, params):
@@ -122,15 +127,12 @@ class PredictedMedianSurvivalScore(StatisticalEvaluator):
             setattr(cls, name, value)
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
-    def _evaluate(self, X_gt_aug: DataLoader, X_syn_aug: DataLoader) -> Dict:
+    def _evaluate(self, data_real: DataLoader, data_synth: DataLoader) -> Dict:
         score = predicted_median_survival_score(
-            hybrid_data_train=X_syn_aug.train().data,
-            hybrid_data_test=X_syn_aug.test().data,
-            real_data_train=X_gt_aug.train().data,
-            real_data_test=X_gt_aug.test().data,
+            synth_data=data_synth,
+            real_data=data_real,
             feature_cols=self.FEATURE_COLS,
             duration_col=self.DURATION_COL,
             event_col=self.EVENT_COL,
         )
-        # absolute pearson coefficient
-        return {"score": abs(score)}
+        return {"score": score}
