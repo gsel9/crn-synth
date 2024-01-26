@@ -92,6 +92,11 @@ def predicted_median_survival_score(
     S_real = fpm_real.predict_survival_function(real_data_test[fit_cols], times=times)
     S_synth = fpm_synth.predict_survival_function(real_data_test[fit_cols], times=times)
 
+    if np.invert(np.isfinite(S_real)).any():
+        raise ValueError("predicted median: non-finite in S_real")
+    if np.invert(np.isfinite(S_synth)).any():
+        raise ValueError("predicted median: non-finte in S_synth")
+
     score = trapezoid(abs(S_synth.values - S_real.values)) / Tmax
     return score
 

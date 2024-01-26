@@ -125,6 +125,11 @@ class CustomMetrics(Metrics):
                 metric, X_gt, X_syn, X_gt_aug, X_syn_aug
             )
 
+            # re-sampling to equal number of datapoints
+            # eval_cnt = min(len(data_real), len(data_synth))
+            # data_real = data_real.sample(eval_cnt)
+            # data_synth = data_synth.sample(eval_cnt)
+
             scores.queue(
                 metric(
                     reduction="mean",

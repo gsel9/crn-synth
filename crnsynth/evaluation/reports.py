@@ -43,12 +43,13 @@ ALL_METRICS = {
         "detection_linear",
     ],
     "privacy": [
-        "delta-presence",
-        "k-anonymization",
-        "identifiability_score",
-        "cap_categorical_score",
+        # "delta-presence",
+        # "k-anonymization",
+        # "identifiability_score",
         "distance_closest_record",
         "nearest_neighbor_distance_ratio",
+        # NOTE ERROR
+        # "cap_categorical_score",
     ],
 }
 
@@ -72,7 +73,7 @@ def score_report(
         # "sanity": ALL_METRICS["sanity"],
         # "privacy": ALL_METRICS["privacy"],
         # "detection": ALL_METRICS["detection"],
-        # "performance": ALL_METRICS["performance"],
+        "performance": ALL_METRICS["performance"],
     }
 
     # NOTE: should remove this and instead pass ready dataloaders
