@@ -43,7 +43,7 @@ def update_measures_from_config(column_config):
             "CLIP_VALUE": column_config["clip_value"],
             "FEATURE_COLS": column_config["feature_cols"],
             "DURATION_COL": column_config["duration"],
-            "TARGET_COL": column_config["target"],
+            "TARGET_COL": column_config["cox_target"],
             "EVENT_COL": column_config["event"],
         }
     )

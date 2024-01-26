@@ -14,21 +14,31 @@ from synthcity.plugins.core.dataloader import DataLoader
 
 
 def _get_dataset_for_metric(metric, X_gt, X_syn, X_gt_aug, X_syn_aug):
-    # including data for a original hold-out set
+    # including data from the hold-out set
     if metric.type() == "privacy":
         return X_gt, X_syn
 
-    # need both outcomes of target variable
+    # NOTE: not predict on synth test set
+    # NOTE: Should include X_gt.test() if predicting on test set?
+    # compare against actual data used for synthetization
     if metric.type() == "performance":
-        return X_gt_aug, X_syn_aug
+        return X_gt.train(), X_syn
 
-    # need both outcomes of target variable
-    # NOTE: under `stats`` category
-    if "augmented" in metric.name():
-        return X_gt_aug, X_syn_aug
+    if metric.type() == "stats":
+        # need both outcomes of target variable
+        if "augmented" in metric.name():
+            return X_gt_aug, X_syn_aug
 
-    # only relevant to compare data used for synthetization
-    if metric.type() in ["sanity", "stats", "detection"]:
+        # TODO: this is only for `predicted_median_survival_score`
+        # should be under performance
+        # if "predicted" in metric.name():
+        #    return X_gt, X_syn
+
+        # compare against actual data used for synthetization
+        return X_gt.train(), X_syn
+
+    # compare against actual data used for synthetization
+    if metric.type() in ["sanity", "detection"]:
         return X_gt.train(), X_syn
 
     raise ValueError(f"Unknown metric type: {metric.type()}")
@@ -90,20 +100,12 @@ class CustomMetrics(Metrics):
                 f"Invalid task type {task_type}. Supported: {supported_tasks}"
             )
 
-        # fit and transform on gt and transform on syn
+        # column encoding
         X_gt, encoders = X_gt.encode()
         X_syn, _ = X_syn.encode(encoders=encoders)
 
-        if X_gt_aug and X_syn_aug:
-            X_gt_aug, encoders_aug = X_gt_aug.encode()
-            X_syn_aug, _ = X_syn_aug.encode(encoders=encoders_aug)
-
-        eval_cnt = min(
-            len(X_gt.train()),
-            len(X_syn.train()),
-            len(X_gt_aug.train()),
-            len(X_syn_aug.train()),
-        )
+        X_gt_aug, encoders_aug = X_gt_aug.encode()
+        X_syn_aug, _ = X_syn_aug.encode(encoders=encoders_aug)
 
         scores = ScoreEvaluator()
 
@@ -116,7 +118,10 @@ class CustomMetrics(Metrics):
             if metric.name() not in metrics[metric.type()]:
                 continue
 
-            _X_gt, _X_syn = _get_dataset_for_metric(
+            print(metric.name())
+
+            # select dataset depending on the metric
+            data_real, data_synth = _get_dataset_for_metric(
                 metric, X_gt, X_syn, X_gt_aug, X_syn_aug
             )
 
@@ -129,8 +134,8 @@ class CustomMetrics(Metrics):
                     workspace=workspace,
                     use_cache=use_cache,
                 ),
-                _X_gt.sample(eval_cnt),
-                _X_syn.sample(eval_cnt),
+                data_real,
+                data_synth,
             )
 
         scores.compute()

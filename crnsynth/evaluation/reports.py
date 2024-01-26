@@ -31,10 +31,11 @@ ALL_METRICS = {
         "feature_corr",
         "contingency_similarity_score",
         "correlation_similarity_score",
+        # TODO: should be under performance
+        "predicted_median_survival_score",
+        "survival_curves_distance_score",
         "cox_beta_augmented_score",
-        "median_survival_augmented_score",
-        "predicted_median_survival_augmented_score",
-        "survival_curves_distance_augmented_score",
+        "median_survival_score",
     ],
     "performance": ["linear_model", "xgb", "feat_rank_distance"],
     "detection": [
@@ -68,10 +69,10 @@ def score_report(
 
     metrics = {
         "stats": ALL_METRICS["stats"],
-        "sanity": ALL_METRICS["sanity"],
-        "privacy": ALL_METRICS["privacy"],
-        "detection": ALL_METRICS["detection"],
-        "performance": ALL_METRICS["performance"],
+        # "sanity": ALL_METRICS["sanity"],
+        # "privacy": ALL_METRICS["privacy"],
+        # "detection": ALL_METRICS["detection"],
+        # "performance": ALL_METRICS["performance"],
     }
 
     # NOTE: should remove this and instead pass ready dataloaders

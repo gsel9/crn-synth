@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 
 
 def propensity_weights(X, y, clip_value=4, seed=42):
-    model = LogisticRegression(random_state=seed)
+    model = LogisticRegression(random_state=seed, max_iter=500)
     model.fit(X, y)
 
     p_pred = model.predict_proba(X)
@@ -50,7 +50,7 @@ def fit_flexible_parametric_model(
     data, duration_col, fit_cols, weights_col=None, event_col=None
 ):
     # fits a cubic spline for the baseline hazard
-    fpm = CoxPHFitter(baseline_estimation_method="spline", n_baseline_knots=2)
+    fpm = CoxPHFitter(baseline_estimation_method="spline", n_baseline_knots=4)
     fpm.fit(
         data[fit_cols],
         duration_col=duration_col,

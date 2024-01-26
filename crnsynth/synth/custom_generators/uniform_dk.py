@@ -13,6 +13,7 @@ class UniformDK(Plugin):
     """Uniform DK integration in synthcity."""
 
     def __init__(self, epsilon=1, **kwargs: Any) -> None:
+        # NOTE: strict=False ignores post-synthesis filtering
         super().__init__(**kwargs)
         self.epsilon = epsilon
         self.model = UniformSynthesizer(epsilon=epsilon, verbose=0)
