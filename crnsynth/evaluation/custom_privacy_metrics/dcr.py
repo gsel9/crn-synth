@@ -12,6 +12,22 @@ from synthcity.utils.serialization import load_from_file, save_to_file
 from crnsynth.evaluation.custom_privacy_metrics.utils import compute_distance_nn
 
 
+def compute_closest_distances(
+    df_train, df_test, df_synth, categorical_columns, distance_metric="gower"
+):
+    distances_test, distances_synth = compute_distance_nn(
+        df_train=df_train,
+        df_test=df_test,
+        df_synth=df_synth,
+        categorical_columns=categorical_columns,
+        n_neighbors=1,
+        normalize=True,
+        distance_metric=distance_metric,
+    )
+
+    return distances_test, distances_synth
+
+
 class DistanceClosestRecord(PrivacyEvaluator):
     """Measures the distance from synthetic records to the closest real record.
     The lower the distance, the more similar the synthetic data is to the real data.
@@ -23,8 +39,9 @@ class DistanceClosestRecord(PrivacyEvaluator):
 
     CATEGORICAL_COLS = None
     FRAC_SENSITIVE = None
+    EPS = 1e-8
 
-    def __init__(self, seed=42, quantile=0.5, **kwargs: Any) -> None:
+    def __init__(self, seed=42, quantile=0.5, metric="gower", **kwargs: Any) -> None:
         super().__init__(default_metric="score", **kwargs)
         """
         Args:
@@ -33,6 +50,7 @@ class DistanceClosestRecord(PrivacyEvaluator):
         """
         self.seed = seed
         self.quantile = quantile
+        self.metric = metric
 
     @property
     def n_categorical(self):
@@ -80,13 +98,16 @@ class DistanceClosestRecord(PrivacyEvaluator):
     def _evaluate(
         self, X_train: DataLoader, X_test: DataLoader, X_syn: DataLoader
     ) -> Dict:
-        distances_test, distances_synth = compute_distance_nn(
+        # compute distances to closest real record
+        distances_test, distances_synth = compute_closest_distances(
             df_train=X_train.data,
             df_test=X_test.data,
             df_synth=X_syn.data,
+            categorical_columns=self.CATEGORICAL_COLS,
+            distance_metric=self.metric,
         )
 
-        # take the specified (default 5-th) percentile of distances to closest real record
+        # take the quantile of distances to closest real record
         dcr_gt = np.quantile(distances_test[:, 0], self.quantile)
         dcr_synth = np.quantile(distances_synth[:, 0], self.quantile)
         return {"gt": dcr_gt, "syn": dcr_synth}

@@ -6,7 +6,9 @@ from crnsynth.evaluation import (
     ContingencySimilarityScore,
     CorrelationSimilarityScore,
     CoxBetaScore,
+    DistanceClosestRecord,
     MedianSurvivalScore,
+    NearestNeighborDistanceRatio,
     PredictedMedianSurvivalScore,
     SurvivalCurvesDistanceScore,
 )
@@ -58,6 +60,18 @@ def update_measures_from_config(column_config):
         {
             "CATEGORICAL_COLS": column_config["categorical_cols"],
             "FRAC_SENSITIVE": column_config["frac_sensitive_cols"],
+        }
+    )
+
+    DistanceClosestRecord.update_cls_params(
+        {
+            "CATEGORICAL_COLS": column_config["categorical_cols"],
+        }
+    )
+
+    NearestNeighborDistanceRatio.update_cls_params(
+        {
+            "CATEGORICAL_COLS": column_config["categorical_cols"],
         }
     )
 

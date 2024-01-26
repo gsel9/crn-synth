@@ -2,6 +2,7 @@
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from synthesis.evaluation.efficacy import (
     ClassifierComparison,
@@ -320,3 +321,72 @@ def plot_logreg_coef_comparison(
     if save_path:
         plt.savefig(save_path)
     return lr_coef_comp
+
+
+def plot_distances(
+    distances_test, distances_synth, title, palette=None, quantile=0.5, save_path=None
+):
+    """Plot histogram of distances for test-train and test-synth. Useful for investigating DCR / NNDR privacy metrics."""
+    fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+    sns.set_theme(style="white")
+    sns.despine()
+
+    if palette is None:
+        palette = sns.color_palette()[:2]
+
+    # plot histograms
+    df_distances = pd.concat(
+        [
+            pd.DataFrame({"distance": distances_test.flatten(), "data": "test"}),
+            pd.DataFrame({"distance": distances_synth.flatten(), "data": "synth"}),
+        ]
+    )
+    sns.histplot(
+        df_distances,
+        ax=ax,
+        x="distance",
+        hue="data",
+        kde=True,
+        bins=50,
+        palette=palette,
+        stat="count",
+        hue_order=["test", "synth"],
+    )
+
+    # plot lines for quantile
+    quantile_test = np.quantile(distances_test, quantile)
+    quantile_synth = np.quantile(distances_synth, quantile)
+
+    ax.axvline(
+        np.median(distances_test), color=palette[0], linestyle="dashed", linewidth=1.5
+    )
+    ax.text(
+        quantile_test,
+        0.9,
+        f"{quantile} quantile test",
+        color=palette[0],
+        ha="right",
+        va="top",
+        rotation=90,
+        transform=ax.get_xaxis_transform(),
+    )
+    ax.axvline(
+        np.median(distances_synth), color=palette[1], linestyle="dashed", linewidth=1.5
+    )
+    ax.text(
+        quantile_synth,
+        0.9,
+        f"{quantile} quantile synth",
+        color=palette[1],
+        ha="right",
+        va="top",
+        rotation=90,
+        transform=ax.get_xaxis_transform(),
+    )
+
+    ax.set_title(title)
+    ax.set_xlabel("distance")
+    ax.set_ylabel("count")
+
+    if save_path:
+        plt.savefig(save_path)
