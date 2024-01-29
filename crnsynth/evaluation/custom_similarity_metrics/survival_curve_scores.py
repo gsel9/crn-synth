@@ -52,11 +52,14 @@ class SurvivalCurvesDistanceScore(StatisticalEvaluator):
             setattr(cls, name, value)
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
-    def _evaluate(self, X_gt_aug: DataLoader, X_syn_aug: DataLoader) -> Dict:
+    def _evaluate(self, data_real: DataLoader, data_synth: DataLoader) -> Dict:
+        duration_col = "os_42"  # "num__os_42"
+        event_col = "cat__os_42_status_1"
+
         score = survival_curves_deviation(
-            hybrid_data=X_syn_aug.data,
-            real_data=X_gt_aug.data,
-            duration_col=self.DURATION_COL,
-            event_col=self.EVENT_COL,
+            hybrid_data=data_synth.data,
+            real_data=data_real.data,
+            duration_col=duration_col,  # self.DURATION_COL,
+            event_col=event_col,  # self.EVENT_COL,
         )
         return {"score": score}

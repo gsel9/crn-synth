@@ -91,14 +91,22 @@ class CoxBetaScore(StatisticalEvaluator):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _evaluate(self, X_gt_aug: DataLoader, X_syn_aug: DataLoader) -> Dict:
+        duration_col = "os_42"  # "num__os_42"
+        target_col = [col for col in X_gt_aug.data.columns if "treatment" in col][0]
+        event_col = "cat__os_42_status_1"
+
+        feature_cols = list(
+            set(X_gt_aug.data.columns) - set([duration_col, target_col, event_col])
+        )
+
         score = cox_beta_score(
             hybrid_data=X_syn_aug.data,
             real_data=X_gt_aug.data,
-            feature_cols=self.FEATURE_COLS,
-            target_col=self.TARGET_COL,
-            duration_col=self.DURATION_COL,
+            feature_cols=feature_cols,  # self.FEATURE_COLS,
+            target_col=target_col,  # self.TARGET_COL,
+            duration_col=duration_col,
             clip_value=self.CLIP_VALUE,
-            event_col=self.EVENT_COL,
+            event_col=event_col,  # self.EVENT_COL,
         )
         # minimize absolute difference
         return {"score": abs(score)}

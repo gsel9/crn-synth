@@ -23,16 +23,16 @@ ALL_METRICS = {
         "distant_values_probability",
     ],
     "stats": [
-        "jensenshannon_dist",
         "chi_squared_test",
         "inv_kl_divergence",
-        "ks_test",
         "wasserstein_dist",
-        "feature_corr",
+        "jensenshannon_dist",
+        "ks_test",
         "contingency_similarity_score",
         "correlation_similarity_score",
-        # TODO: should be under performance
+        # TODO: should be under performance metrics
         "predicted_median_survival_score",
+        ###
         "survival_curves_distance_score",
         "cox_beta_augmented_score",
         "median_survival_score",
@@ -48,8 +48,7 @@ ALL_METRICS = {
         # "identifiability_score",
         "distance_closest_record",
         "nearest_neighbor_distance_ratio",
-        # NOTE ERROR
-        # "cap_categorical_score",
+        "cap_categorical_score",
     ],
 }
 
@@ -70,9 +69,9 @@ def score_report(
 
     metrics = {
         "stats": ALL_METRICS["stats"],
-        # "sanity": ALL_METRICS["sanity"],
-        # "privacy": ALL_METRICS["privacy"],
-        # "detection": ALL_METRICS["detection"],
+        "sanity": ALL_METRICS["sanity"],
+        "privacy": ALL_METRICS["privacy"],
+        "detection": ALL_METRICS["detection"],
         "performance": ALL_METRICS["performance"],
     }
 
@@ -103,6 +102,9 @@ def score_report(
     remove_dir(cache_dir)
 
     scores = eval[reduce].to_dict()
+    # print(scores)
+    # print(len(scores))
+    # assert asf
     errors = eval["errors"].to_dict()
     duration = eval["durations"].to_dict()
     direction = eval["direction"].to_dict()
@@ -113,64 +115,3 @@ def score_report(
         report.add(key, scores[key], errors[key], duration[key], direction[key])
 
     return report.to_dataframe()
-
-
-def create_score_reports(
-    results_dir, dataset_name, metrics=None, generator_names=None, save=True
-):
-    """Create score reports for comparing synthetic datasets."""
-    # get all metrics if not specified
-    metrics = metrics if metrics is not None else ALL_METRICS
-
-    # load real data
-    data_real = pd.read_csv(config.PATH_DATA[dataset_name], index_col=0)
-
-    # get paths to synthetic data either through specified generator_names or all csv's within folder
-    path_results_synth = util.get_path_output(results_dir, output_type="synthetic_data")
-    if generator_names is not None:
-        paths_synth_data = [
-            path_results_synth / f"{results_dir}_{name}.csv" for name in generator_names
-        ]
-    else:
-        paths_synth_data = [
-            os.path.join(path_results_synth, f)
-            for f in os.listdir(path_results_synth)
-            if f.endswith(".csv")
-        ]
-        generator_names = [
-            os.path.basename(f).replace(f"{results_dir}_", "").replace(".csv", "")
-            for f in paths_synth_data
-        ]
-        print(
-            f"Found {len(generator_names)} synthetic datasets for {results_dir}: {generator_names}"
-        )
-
-    # load synthetic data one by one and compute metrics
-    all_reports = []
-    for i, path_s_df in enumerate(paths_synth_data):
-        data_fake = pd.read_csv(path_s_df, index_col=0)
-        report = score_report(data_real, data_fake, metrics)
-
-        # post-processing
-        report["measure"] = report.index
-        report.index = pd.Index(
-            [generator_names[i]] * report.shape[0], name="generator_name"
-        )
-
-        # add to list of reports
-        all_reports.append(report)
-
-        # memory release
-        del data_fake
-
-    df_reports = pd.concat(all_reports)
-
-    # save files
-    if save:
-        path_out = util.get_path_output(
-            results_dir, output_type="reports", verbose=True
-        )
-        path_file = path_out / f"{results_dir}_score_reports.csv"
-        df_reports.to_csv(path_file)
-
-    return df_reports
