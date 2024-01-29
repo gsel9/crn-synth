@@ -83,6 +83,10 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
         return int(len(self.CATEGORICAL_COLS))
 
     @staticmethod
+    def type() -> str:
+        return "privacy"
+
+    @staticmethod
     def name() -> str:
         return "nearest_neighbor_distance_ratio"
 
@@ -124,12 +128,13 @@ class NearestNeighborDistanceRatio(PrivacyEvaluator):
     def _evaluate(
         self, X_train: DataLoader, X_test: DataLoader, X_syn: DataLoader
     ) -> Dict:
+        categorical_cols = [col for col in X_train.data.columns if "cat" in col]
         # compute distance ratio
         ratio_distances_test, ratio_distances_synth = compute_ratio_distances(
             df_train=X_train.data,
             df_test=X_test.data,
             df_synth=X_syn.data,
-            categorical_columns=self.CATEGORICAL_COLS,
+            categorical_columns=categorical_cols,  # self.CATEGORICAL_COLS,
             n_neighbors=self.n_neighbors,
             distance_metric=self.metric,
         )

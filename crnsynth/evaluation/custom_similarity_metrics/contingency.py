@@ -32,9 +32,10 @@ class ContingencySimilarityScore(StatisticalEvaluator):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _evaluate(self, X_gt: DataLoader, X_syn: DataLoader) -> Dict:
+        categorical_cols = [col for col in X_gt.data.columns if "cat" in col]
         score = ContingencySimilarity.compute(
-            real_data=X_gt.data[self.CATEGORICAL_COLS],
-            synthetic_data=X_syn.data[self.CATEGORICAL_COLS],
+            real_data=X_gt.data[categorical_cols],  # [self.CATEGORICAL_COLS],
+            synthetic_data=X_syn.data[categorical_cols],  # [self.CATEGORICAL_COLS],
         )
         # maximize feature correlation score
         return {"score": abs(score)}

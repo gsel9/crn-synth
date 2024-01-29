@@ -48,16 +48,22 @@ class CategoricalCAPScore(PrivacyEvaluator):
         if n_sensitive == 0:
             return
 
+        categorical_cols = [col for col in X_gt.data.columns if "cat" in col]
+
         known_fields, sensitive_fields = sample_subset(
-            self.CATEGORICAL_COLS,
+            categorical_cols,  # self.CATEGORICAL_COLS,
             seed=self.seed,
             size=n_sensitive,
             return_residual=True,
         )
 
         score = CategoricalCAP.compute(
-            real_data=X_gt.data[self.CATEGORICAL_COLS].astype(int),
-            synthetic_data=X_syn.data[self.CATEGORICAL_COLS].astype(int),
+            real_data=X_gt.data[categorical_cols].astype(
+                int
+            ),  # [self.CATEGORICAL_COLS].astype(int),
+            synthetic_data=X_syn.data[categorical_cols].astype(
+                int
+            ),  # .data[self.CATEGORICAL_COLS].astype(int),
             key_fields=list(known_fields),
             sensitive_fields=list(sensitive_fields),
         )

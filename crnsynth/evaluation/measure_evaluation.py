@@ -5,24 +5,20 @@ from typing import Dict, List, Optional, Union
 # third party
 import pandas as pd
 from pydantic import validate_arguments
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 # synthcity absolute
 from synthcity.metrics import Metrics
 from synthcity.metrics.eval import standard_metrics
 from synthcity.metrics.scores import ScoreEvaluator
-from synthcity.plugins.core.dataloader import DataLoader
+from synthcity.plugins.core.dataloader import DataLoader, GenericDataLoader
 
 
 def _get_dataset_for_metric(metric, X_gt, X_syn, X_gt_aug, X_syn_aug):
     # including data from the hold-out set
-    if metric.type() == "privacy":
+    if metric.type() in ["privacy", "performance"]:
         return X_gt, X_syn
-
-    # NOTE: not predict on synth test set
-    # NOTE: Should include X_gt.test() if predicting on test set?
-    # compare against actual data used for synthetization
-    if metric.type() == "performance":
-        return X_gt.train(), X_syn
 
     if metric.type() == "stats":
         # need both outcomes of target variable
@@ -31,8 +27,8 @@ def _get_dataset_for_metric(metric, X_gt, X_syn, X_gt_aug, X_syn_aug):
 
         # TODO: this is only for `predicted_median_survival_score`
         # should be under performance
-        # if "predicted" in metric.name():
-        #    return X_gt, X_syn
+        if "predicted" in metric.name():
+            return X_gt, X_syn
 
         # compare against actual data used for synthetization
         return X_gt.train(), X_syn
@@ -42,6 +38,40 @@ def _get_dataset_for_metric(metric, X_gt, X_syn, X_gt_aug, X_syn_aug):
         return X_gt.train(), X_syn
 
     raise ValueError(f"Unknown metric type: {metric.type()}")
+
+
+def tmp_custom_transform(data_loader, encoders=None):
+    if encoders is None:
+        numerical_cols = ["age"]  # , "os_42"]
+        categorical_cols = [
+            "sex",
+            "treatment",
+            "treatyear",
+            "os_42_status",
+            "ecog",
+            "squamous",
+        ]
+
+        transformers = [
+            ("cat", OneHotEncoder(drop="if_binary"), categorical_cols),
+            ("num", StandardScaler(), numerical_cols),
+        ]
+
+        encoders = ColumnTransformer(transformers)
+
+    encoders.fit(data_loader.data)  # fit(data_loader.train().data)
+    data_enc = encoders.transform(data_loader.data)
+    data_enc = pd.DataFrame(
+        data_enc, columns=encoders.get_feature_names_out(data_loader.data.columns)
+    )
+    data_enc["os_42"] = data_loader.data["os_42"]
+
+    data_loader_enc = GenericDataLoader(data_enc)
+    data_loader_enc.train_size = data_loader.train_size
+    data_loader_enc.random_state = data_loader.random_state
+    data_loader_enc.target_column = "cat__os_42_status_1"  # data_loader.target_column
+
+    return data_loader_enc, encoders
 
 
 class CustomMetrics(Metrics):
@@ -101,11 +131,11 @@ class CustomMetrics(Metrics):
             )
 
         # column encoding
-        X_gt, encoders = X_gt.encode()
-        X_syn, _ = X_syn.encode(encoders=encoders)
+        # X_gt, encoders = X_gt.encode()
+        # X_syn, _ = X_syn.encode(encoders=encoders)
 
-        X_gt_aug, encoders_aug = X_gt_aug.encode()
-        X_syn_aug, _ = X_syn_aug.encode(encoders=encoders_aug)
+        # X_gt_aug, _ = X_gt_aug.encode()
+        # X_syn_aug, _ = X_syn_aug.encode(encoders=encoders)
 
         scores = ScoreEvaluator()
 
@@ -118,12 +148,20 @@ class CustomMetrics(Metrics):
             if metric.name() not in metrics[metric.type()]:
                 continue
 
-            print(metric.name())
-
             # select dataset depending on the metric
             data_real, data_synth = _get_dataset_for_metric(
                 metric, X_gt, X_syn, X_gt_aug, X_syn_aug
             )
+
+            # column encoding
+            data_real, encoders = tmp_custom_transform(data_real)
+            data_synth, _ = tmp_custom_transform(data_synth, encoders)
+            # print(data_real.data.columns)
+            # assert afs
+            # import numpy as np
+            # D = (data_real.data - data_synth.data).sum()
+            # print("RIGHT AFTER ENCODE:", np.sum(D))
+            # assert asf
 
             # re-sampling to equal number of datapoints
             # eval_cnt = min(len(data_real), len(data_synth))

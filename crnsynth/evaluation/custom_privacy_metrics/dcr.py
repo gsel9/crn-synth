@@ -57,6 +57,10 @@ class DistanceClosestRecord(PrivacyEvaluator):
         return int(len(self.CATEGORICAL_COLS))
 
     @staticmethod
+    def type() -> str:
+        return "privacy"
+
+    @staticmethod
     def name() -> str:
         return "distance_closest_record"
 
@@ -98,6 +102,7 @@ class DistanceClosestRecord(PrivacyEvaluator):
     def _evaluate(
         self, X_train: DataLoader, X_test: DataLoader, X_syn: DataLoader
     ) -> Dict:
+        self.CATEGORICAL_COLS = [col for col in X_train.data.columns if "cat" in col]
         # compute distances to closest real record
         distances_test, distances_synth = compute_closest_distances(
             df_train=X_train.data,

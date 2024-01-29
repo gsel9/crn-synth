@@ -60,9 +60,11 @@ class CorrelationSimilarityScore(StatisticalEvaluator):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _evaluate(self, X_gt: DataLoader, X_syn: DataLoader) -> Dict:
+        numerical_cols = [col for col in X_gt.data.columns if "num" in col]
+        numerical_cols.append("os_42")
         score = CorrelationSimilarity.compute(
-            real_data=X_gt.data[self.NUMERICAL_COLS],
-            synthetic_data=X_syn.data[self.NUMERICAL_COLS],
+            real_data=X_gt.data[numerical_cols],  # [self.NUMERICAL_COLS],
+            synthetic_data=X_syn.data[numerical_cols],  # [self.NUMERICAL_COLS],
             coefficient="Pearson",
         )
         # maximize feature correlation score

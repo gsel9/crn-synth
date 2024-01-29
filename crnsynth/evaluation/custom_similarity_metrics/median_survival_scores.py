@@ -56,8 +56,14 @@ class MedianSurvivalScore(StatisticalEvaluator):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _evaluate(self, X_gt_aug: DataLoader, X_syn_aug: DataLoader) -> Dict:
+        duration_col = "os_42"  # "num__os_42"
+        event_col = "cat__os_42_status_1"
+
         score = median_survival_score(
-            X_syn_aug, X_gt_aug, self.DURATION_COL, self.EVENT_COL
+            X_syn_aug,
+            X_gt_aug,
+            duration_col,
+            event_col,  # self.DURATION_COL, self.EVENT_COL
         )
         return {"score": score}
 
@@ -92,13 +98,13 @@ def predicted_median_survival_score(
     S_real = fpm_real.predict_survival_function(real_data_test[fit_cols], times=times)
     S_synth = fpm_synth.predict_survival_function(real_data_test[fit_cols], times=times)
 
-    if np.invert(np.isfinite(S_real)).any():
+    if np.invert(np.isfinite(S_real.values)).any():
         raise ValueError("predicted median: non-finite in S_real")
-    if np.invert(np.isfinite(S_synth)).any():
+    if np.invert(np.isfinite(S_synth.values)).any():
         raise ValueError("predicted median: non-finte in S_synth")
 
     score = trapezoid(abs(S_synth.values - S_real.values)) / Tmax
-    return score
+    return np.mean(score)
 
 
 class PredictedMedianSurvivalScore(StatisticalEvaluator):
@@ -128,11 +134,19 @@ class PredictedMedianSurvivalScore(StatisticalEvaluator):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _evaluate(self, data_real: DataLoader, data_synth: DataLoader) -> Dict:
+        duration_col = "os_42"  # "num__os_42"
+        target_col = [col for col in data_real.data.columns if "treatment" in col][0]
+        event_col = "cat__os_42_status_1"
+
+        feature_cols = list(
+            set(data_real.data.columns) - set([duration_col, target_col, event_col])
+        )
+
         score = predicted_median_survival_score(
             synth_data=data_synth,
             real_data=data_real,
-            feature_cols=self.FEATURE_COLS,
-            duration_col=self.DURATION_COL,
-            event_col=self.EVENT_COL,
+            feature_cols=feature_cols,  # self.FEATURE_COLS,
+            duration_col=duration_col,  # ,self.DURATION_COL,
+            event_col=event_col,  # self.EVENT_COL,
         )
         return {"score": score}
