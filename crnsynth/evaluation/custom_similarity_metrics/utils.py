@@ -18,10 +18,10 @@ def propensity_weights(X, y, clip_value=4, seed=42):
     return 1 / p_score
 
 
-def fit_kaplanmeier(event_times, event_indicator):
+def fit_kaplanmeier(event_times, event_indicator, weights=None):
     """Kaplan-Meier estimate of median survival time.
 
-    Args:
+    Args:'
         event_times: Time to event data.
         event_indicator: Outcome indicator.
 
@@ -30,7 +30,7 @@ def fit_kaplanmeier(event_times, event_indicator):
     """
 
     kmf = KaplanMeierFitter()
-    kmf.fit(event_times, event_indicator)
+    kmf.fit(event_times, event_indicator, weights=weights)
     return kmf
 
 

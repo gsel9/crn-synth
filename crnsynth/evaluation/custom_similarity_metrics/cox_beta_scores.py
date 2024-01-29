@@ -93,7 +93,7 @@ class CoxBetaScore(StatisticalEvaluator):
     def _evaluate(self, X_gt_aug: DataLoader, X_syn_aug: DataLoader) -> Dict:
         duration_col = "os_42"  # "num__os_42"
         target_col = [col for col in X_gt_aug.data.columns if "treatment" in col][0]
-        event_col = "cat__os_42_status_1"
+        event_col = "os_42_status"
 
         feature_cols = list(
             set(X_gt_aug.data.columns) - set([duration_col, target_col, event_col])

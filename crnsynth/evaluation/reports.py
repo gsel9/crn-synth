@@ -37,7 +37,12 @@ ALL_METRICS = {
         "cox_beta_augmented_score",
         "median_survival_score",
     ],
-    "performance": ["linear_model", "xgb", "feat_rank_distance"],
+    "performance": [
+        "linear_classification_error",
+        "rf_classification_error" "linear_model",
+        "xgb",
+        "feat_rank_distance",
+    ],
     "detection": [
         "detection_xgb",
         "detection_linear",
@@ -64,22 +69,21 @@ def score_report(
     reduce="mean",
     cache_dir="./tmp",
     random_state=42,
+    debug=False,
 ):
     """Create score report for a single synthetic dataset when compared to real data."""
 
     metrics = {
-        "stats": ALL_METRICS["stats"],
-        "sanity": ALL_METRICS["sanity"],
-        "privacy": ALL_METRICS["privacy"],
-        "detection": ALL_METRICS["detection"],
+        # "stats": ALL_METRICS["stats"],
+        # "sanity": ALL_METRICS["sanity"],
+        # "privacy": ALL_METRICS["privacy"],
+        # "detection": ALL_METRICS["detection"],
         "performance": ALL_METRICS["performance"],
     }
 
-    # NOTE: should remove this and instead pass ready dataloaders
     X_gt = GenericDataLoader(
         data_real, target_column=target_column, random_state=random_state
     )
-
     X_syn = create_from_info(data_fake, X_gt.info())
     X_syn.random_state = random_state
 
@@ -89,6 +93,10 @@ def score_report(
 
     X_syn_aug = create_from_info(data_synth_aug, X_gt_aug.info())
     X_syn_aug.random_state = random_state
+
+    # import numpy as np
+    # print((X_gt.train().encode()[0].data - X_syn.encode()[0].data).sum())
+    # print((X_syn_aug.encode()[0].data - X_gt_aug.encode()[0].data).sum())
 
     eval = CustomMetrics.evaluate(
         X_gt=X_gt,
@@ -102,9 +110,10 @@ def score_report(
     remove_dir(cache_dir)
 
     scores = eval[reduce].to_dict()
-    # print(scores)
-    # print(len(scores))
-    # assert asf
+    if debug:
+        print(scores)
+        assert False
+
     errors = eval["errors"].to_dict()
     duration = eval["durations"].to_dict()
     direction = eval["direction"].to_dict()
