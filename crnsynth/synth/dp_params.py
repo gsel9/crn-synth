@@ -6,7 +6,7 @@ from diffprivlib.tools.quantiles import median
 from diffprivlib.tools.utils import mean, std, var
 
 
-def dp_mean(array, epsilon, bounds, random_state, verbose=1):
+def dp_mean(array, epsilon, bounds, random_state=None, verbose=1):
     """Wrapper of mean function from diffprivlib. Computes the DP mean of an array."""
     return mean(
         array=array,
@@ -17,7 +17,7 @@ def dp_mean(array, epsilon, bounds, random_state, verbose=1):
     )
 
 
-def dp_median(array, epsilon, bounds, random_state, verbose=1):
+def dp_median(array, epsilon, bounds, random_state=None, verbose=1):
     """Wrapper of median function from diffprivlib. Computes the DP median of an array."""
     return median(
         array=array,
@@ -28,7 +28,7 @@ def dp_median(array, epsilon, bounds, random_state, verbose=1):
     )
 
 
-def dp_max(array, epsilon, bounds, random_state, verbose=1):
+def dp_max(array=None, epsilon=None, bounds=None, random_state=None, verbose=1):
     """Compute the DP max of an array. Just a placeholder function, as the sensitivty of the maximum in unbounded.
     Will thus not estimate based on array, but return the upperbound instead."""
     if verbose:
@@ -42,7 +42,7 @@ def dp_max(array, epsilon, bounds, random_state, verbose=1):
     return max_bound
 
 
-def dp_min(array, epsilon, bounds, random_state, verbose=1):
+def dp_min(array=None, epsilon=None, bounds=None, random_state=None, verbose=1):
     """Compute the DP min of an array. Just a placeholder function, as the sensitivty of the minimum in unbounded.
     Will thus not estimate based on array, but return the lowerbound instead."""
     if verbose:
