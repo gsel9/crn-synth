@@ -57,7 +57,7 @@ class MedianSurvivalScore(StatisticalEvaluator):
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _evaluate(self, X_gt_aug: DataLoader, X_syn_aug: DataLoader) -> Dict:
         duration_col = "os_42"  # "num__os_42"
-        event_col = "cat__os_42_status_1"
+        event_col = "os_42_status"
 
         score = median_survival_score(
             X_syn_aug,
@@ -136,7 +136,7 @@ class PredictedMedianSurvivalScore(StatisticalEvaluator):
     def _evaluate(self, data_real: DataLoader, data_synth: DataLoader) -> Dict:
         duration_col = "os_42"  # "num__os_42"
         target_col = [col for col in data_real.data.columns if "treatment" in col][0]
-        event_col = "cat__os_42_status_1"
+        event_col = "os_42_status"
 
         feature_cols = list(
             set(data_real.data.columns) - set([duration_col, target_col, event_col])
