@@ -4,7 +4,7 @@ import numpy as np
 from pydantic import validate_arguments
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 from synthcity.metrics.eval_performance import PerformanceEvaluator
 from synthcity.plugins.core.dataloader import DataLoader
 
@@ -49,16 +49,22 @@ class TreeClassication(PerformanceEvaluator):
         X_test_gt, y_test_gt = X_gt.test().unpack()
         X_synth, y_test_synth = X_syn.unpack()
 
+        # HACK
+        X_train_gt = X_train_gt.drop(["os_42"], axis=1)
+        X_test_gt = X_test_gt.drop(["os_42"], axis=1)
+        X_synth = X_synth.drop(["os_42"], axis=1)
+        ###
+
         model = RandomForestClassifier(max_depth=3, n_estimators=50, random_state=42)
 
         y_synth_pred, y_real_pred = train_synth_clf_real(
             model, X_test_gt, X_train_gt, y_train_gt, X_synth, y_test_synth
         )
 
-        score_real = roc_auc_score(y_test_gt, y_real_pred)
-        score_synth = roc_auc_score(y_test_gt, y_synth_pred)
-
-        return {"score": abs(score_real - score_synth)}
+        return {"score": accuracy_score(y_test_gt, y_synth_pred)}
+        # score_real = roc_auc_score(y_test_gt, y_real_pred)
+        # score_synth = roc_auc_score(y_test_gt, y_synth_pred)
+        # return {"score": abs(score_real - score_synth)}
 
 
 class LinearClassication(PerformanceEvaluator):
@@ -87,13 +93,19 @@ class LinearClassication(PerformanceEvaluator):
         X_test_gt, y_test_gt = X_gt.test().unpack()
         X_synth, y_test_synth = X_syn.unpack()
 
+        # HACK
+        X_train_gt = X_train_gt.drop(["os_42"], axis=1)
+        X_test_gt = X_test_gt.drop(["os_42"], axis=1)
+        X_synth = X_synth.drop(["os_42"], axis=1)
+        ###
+
         model = LogisticRegression(max_iter=500, random_state=42)
 
         y_synth_pred, y_real_pred = train_synth_clf_real(
             model, X_test_gt, X_train_gt, y_train_gt, X_synth, y_test_synth
         )
 
-        score_real = roc_auc_score(y_test_gt, y_real_pred)
-        score_synth = roc_auc_score(y_test_gt, y_synth_pred)
-
-        return {"score": abs(score_real - score_synth)}
+        return {"score": accuracy_score(y_test_gt, y_synth_pred)}
+        # score_real = roc_auc_score(y_test_gt, y_real_pred)
+        # score_synth = roc_auc_score(y_test_gt, y_synth_pred)
+        # return {"score": abs(score_real - score_synth)}

@@ -23,9 +23,9 @@ ALL_METRICS = {
         "distant_values_probability",
     ],
     "stats": [
-        "chi_squared_test",
-        "inv_kl_divergence",
-        "wasserstein_dist",
+        # "chi_squared_test",
+        # "inv_kl_divergence",
+        # "wasserstein_dist",
         "jensenshannon_dist",
         "ks_test",
         "contingency_similarity_score",
@@ -39,8 +39,11 @@ ALL_METRICS = {
     ],
     "performance": [
         "linear_classification_error",
-        "rf_classification_error" "linear_model",
-        "xgb",
+        "rf_classification_error",
+        # NOTE: training data is used as test data in CV
+        # "linear_model",
+        # "xgb",
+        ###
         "feat_rank_distance",
     ],
     "detection": [
@@ -74,10 +77,10 @@ def score_report(
     """Create score report for a single synthetic dataset when compared to real data."""
 
     metrics = {
-        # "stats": ALL_METRICS["stats"],
+        "stats": ALL_METRICS["stats"],
         # "sanity": ALL_METRICS["sanity"],
-        # "privacy": ALL_METRICS["privacy"],
-        # "detection": ALL_METRICS["detection"],
+        "privacy": ALL_METRICS["privacy"],
+        "detection": ALL_METRICS["detection"],
         "performance": ALL_METRICS["performance"],
     }
 
