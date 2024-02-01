@@ -28,34 +28,6 @@ def dp_median(array, epsilon, bounds, random_state=None, verbose=1):
     )
 
 
-def dp_max(array=None, epsilon=None, bounds=None, random_state=None, verbose=1):
-    """Compute the DP max of an array. Just a placeholder function, as the sensitivty of the maximum in unbounded.
-    Will thus not estimate based on array, but return the upperbound instead."""
-    if verbose:
-        print(
-            "A maximum has unbounded sensitivity, thus cannot compute based on data. Will select max from bounds instead."
-        )
-
-    if bounds is None:
-        raise ValueError("Bounds must be specified to compute DP max.")
-    max_bound = max(bounds)
-    return max_bound
-
-
-def dp_min(array=None, epsilon=None, bounds=None, random_state=None, verbose=1):
-    """Compute the DP min of an array. Just a placeholder function, as the sensitivty of the minimum in unbounded.
-    Will thus not estimate based on array, but return the lowerbound instead."""
-    if verbose:
-        print(
-            "A minimum has unbounded sensitivity, thus cannot compute based on data. Will select min from bounds instead."
-        )
-
-    if bounds is None:
-        raise ValueError("Bounds must be specified to compute DP min.")
-    min_bound = min(bounds)
-    return min_bound
-
-
 def dp_var(array, epsilon, bounds, random_state, verbose=1):
     """Wrapper of var function from diffprivlib. Computes the DP variance of an array."""
     return var(
@@ -81,8 +53,6 @@ def dp_std(array, epsilon, bounds, random_state, verbose=1):
 DP_PARAM_FUNC = {
     "mean": dp_mean,
     "median": dp_median,
-    "max": dp_max,
-    "min": dp_min,
     "var": dp_var,
     "std": dp_std,
 }
