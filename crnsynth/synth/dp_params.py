@@ -6,48 +6,26 @@ from diffprivlib.tools.quantiles import median
 from diffprivlib.tools.utils import mean, std, var
 
 
-def dp_mean(array, epsilon, bounds, random_state=None, verbose=1):
+def dp_mean(array, epsilon, bounds, random_state=None):
     """Wrapper of mean function from diffprivlib. Computes the DP mean of an array."""
-    return mean(
-        array=array,
-        epsilon=epsilon,
-        bounds=bounds,
-        random_state=random_state,
-        verbose=verbose,
-    )
+    return mean(array=array, epsilon=epsilon, bounds=bounds, random_state=random_state)
 
 
-def dp_median(array, epsilon, bounds, random_state=None, verbose=1):
+def dp_median(array, epsilon, bounds, random_state=None):
     """Wrapper of median function from diffprivlib. Computes the DP median of an array."""
     return median(
-        array=array,
-        epsilon=epsilon,
-        bounds=bounds,
-        random_state=random_state,
-        verbose=verbose,
+        array=array, epsilon=epsilon, bounds=bounds, random_state=random_state
     )
 
 
-def dp_var(array, epsilon, bounds, random_state, verbose=1):
+def dp_var(array, epsilon, bounds, random_state):
     """Wrapper of var function from diffprivlib. Computes the DP variance of an array."""
-    return var(
-        array=array,
-        epsilon=epsilon,
-        bounds=bounds,
-        random_state=random_state,
-        verbose=verbose,
-    )
+    return var(array=array, epsilon=epsilon, bounds=bounds, random_state=random_state)
 
 
-def dp_std(array, epsilon, bounds, random_state, verbose=1):
+def dp_std(array, epsilon, bounds, random_state):
     """Wrapper of std function from diffprivlib. Computes the DP std of an array."""
-    return std(
-        array=array,
-        epsilon=epsilon,
-        bounds=bounds,
-        random_state=random_state,
-        verbose=verbose,
-    )
+    return std(array=array, epsilon=epsilon, bounds=bounds, random_state=random_state)
 
 
 DP_PARAM_FUNC = {
@@ -105,7 +83,6 @@ class DPParam:
             epsilon=self.epsilon,
             bounds=self.bounds,
             random_state=self.random_state,
-            verbose=self.verbose,
         )
 
         # store param in object to re-use in case you don't want to re-compute
