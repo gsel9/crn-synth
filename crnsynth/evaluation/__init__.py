@@ -1,8 +1,8 @@
 from synthcity.metrics.eval import standard_metrics
 
 from .custom_performance_metrics.target_classification import (
-    LinearClassication,
-    TreeClassication,
+    LinearClassification,
+    TreeClassification,
 )
 from .custom_privacy_metrics.catcap import CategoricalCAPScore
 from .custom_privacy_metrics.catknn import CategoricalKNNScore
@@ -32,8 +32,8 @@ __all__ = [
     "PredictedMedianSurvivalScore",
     "SurvivalCurvesDistanceScore",
     "FeatureCorrelation",
-    "RandomForestClassication",
-    "LinearClassication",
+    "RandomForestClassification",
+    "LinearClassification",
 ]
 
 # register custom metrics to synthcity
@@ -48,5 +48,5 @@ standard_metrics.append(SurvivalCurvesDistanceScore)
 standard_metrics.append(ContingencySimilarityScore)
 standard_metrics.append(CorrelationSimilarityScore)
 standard_metrics.append(FeatureCorrelation)
-standard_metrics.append(TreeClassication)
-standard_metrics.append(LinearClassication)
+standard_metrics.append(TreeClassification)
+standard_metrics.append(LinearClassification)
