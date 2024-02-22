@@ -1,5 +1,8 @@
 """Synthesis pipeline"""
 import warnings
+from typing import Union
+
+import pandas as pd
 
 # from sklearn.model_selection import train_test_split
 from synthcity.plugins.core.dataloader import (
@@ -7,12 +10,58 @@ from synthcity.plugins.core.dataloader import (
     SurvivalAnalysisDataLoader,
 )
 
+from crnsynth2.generators.base import BaseGenerator
 from crnsynth.evaluation import check
 
 warnings.filterwarnings("default")
 
 
 class BaseSynthPipe:
+    def __init__(
+        self,
+        generator: BaseGenerator,
+        generalize: bool,
+        random_state: Union[int, None] = None,
+    ) -> None:
+        self.generator = generator
+        self.generalize = generalize
+        self.random_state = random_state
+
+    @property
+    def name(self):
+        """Return the name of the pipeline"""
+        raise NotImplementedError("name() method not implemented")
+
+    def process_data(self, data_real: pd.DataFrame) -> pd.DataFrame:
+        """Process real data"""
+        raise NotImplementedError("Should implement .process_data()")
+
+    def fit(self, data_real: pd.DataFrame) -> None:
+        """Fit generator on processed real data"""
+        raise NotImplementedError("Should implement .fit()")
+
+    def generate(self, n_records: Union[int, None] = None) -> pd.DataFrame:
+        """Generate records using fitted generator"""
+        raise NotImplementedError("Should implement .generate()")
+
+    def postprocess_synthetic_data(self, data_synth: pd.DataFrame) -> pd.DataFrame:
+        """Postprocess synthetic data"""
+        raise NotImplementedError("Should implement .postprocess_synthetic_data()")
+
+    def run(self, data_real, n_records: Union[int, None] = None):
+        """Run all steps in synthesis pipeline. User can run these steps one by one themselves as well."""
+        data_real = self.process_data(data_real)
+        self.fit(data_real)
+        data_synth = self.generate(n_records)
+        data_synth = self.postprocess_synthetic_data(data_synth)
+        return data_synth
+
+    def set_generator(self, generator: BaseGenerator) -> None:
+        """Set generator for synthesis"""
+        self.generator = generator
+
+
+class BaseSynthPipe2:
     """Base class for synthesis pipelines. Handles data processing and generation of synthetic data.
 
     User can define their own synthesis pipeline by subclassing this class and implementing the following methods:
@@ -138,10 +187,6 @@ class BaseSynthPipe:
         data_synth = self.generate(n_records)
         data_synth = self.postprocess_synthetic_data(data_synth)
         return data_synth
-
-    def set_generator(self, generator):
-        """Set generator"""
-        self.generator = generator
 
     def _generalize_data(self, data_real):
         """Generalize data by binning numeric columns or grouping nominal columns"""

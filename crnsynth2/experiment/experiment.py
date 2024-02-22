@@ -1,12 +1,93 @@
 """Run multiple synthesis experiments and save the results to disk"""
 import json
 import os
+from pathlib import Path
+from typing import Any, Dict, List, Union
 
 import pandas as pd
 from joblib import Parallel, delayed
 
+from crnsynth2.generators.base import BaseGenerator
+from crnsynth2.metrics.base import BaseMetric
+from crnsynth2.process.pipeline.synthpipe import BaseSynthPipe
+
+
+def create_dir(path_to_dir, sub_dirs):
+    """Ensure output directory for results exists."""
+
+    if not os.path.exists(path_to_dir):
+        os.makedirs(path_to_dir)
+
+    for subdir in sub_dirs:
+        if not os.path.exists(path_to_dir / subdir):
+            os.makedirs(path_to_dir / subdir)
+
 
 class SynthExperiment:
+    """Run a set of synthesis configurations"""
+
+    def __init__(
+        self,
+        experiment_name: str,
+        generators: list,
+        metrics: list,
+        synth_pipe: BaseSynthPipe,
+        path_out: Union[str, Path],
+    ):
+        # TODO: add optional save output and optional metric computation
+        self.experiment_name = experiment_name
+        self.generators = generators
+        self.metrics = metrics
+        self.synth_pipe = synth_pipe
+        self.path_out = path_out
+
+        # learned attributes
+        self.config_ = {}
+        self.scores_ = {}
+
+    def run(self, data_real: pd.DataFrame):
+        """Run the synthesis experiment"""
+        # create output directory
+        create_dir(self.path_out, sub_dirs=["synthetic_data", "generators"])
+
+        # iterate over generators
+        for generator in self.generators:
+            self.config_["generators"][generator.name] = generator.__dict__
+
+            # run the synthesis experiment
+            self.synth_pipe.set_generator(generator)
+            data_synth = self.synth_pipe.run(data_real)
+
+            # compute metrics
+            self.scores_[generator.name] = {}
+            for metric in self.metrics:
+                self.scores_[generator.name][metric.name] = metric.compute(
+                    data_real, data_synth
+                )
+
+            # save the synth data and generator
+            fname = f"{self.experiment_name}_{generator.name}"
+            data_synth.to_csv(
+                Path(self.path_out) / "synthetic_data" / f"{fname}.csv", index=False
+            )
+            generator.save(Path(self.path_out) / "generators" / f"{fname}.pkl")
+
+        # save scores
+        df_scores = pd.DataFrame.from_dict(self.scores_, orient="index")
+        df_scores.to_csv(
+            Path(self.path_out) / f"{self.experiment_name}_scores.csv", index=False
+        )
+
+        #: todo save config
+
+    def _init_config(self):
+        """Create the configuration file for the synthesis experiment"""
+        self.config_["experiment_name"] = self.experiment_name
+        self.config_["synth_pipe"] = self.synth_pipe.__dict__
+        self.config_["generators"] = {}
+
+
+class SynthExperimentConfig:
     """Run a synthesis experiment"""
 
     def __init__(self, generators, config_experiment, config_generator):
