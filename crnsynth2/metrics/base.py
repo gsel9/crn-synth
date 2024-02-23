@@ -1,4 +1,6 @@
 """Base metric class for CRN synthesis metrics."""
+from typing import Union
+
 import pandas as pd
 
 
@@ -13,7 +15,22 @@ class BaseMetric:
         """Return the name of the metric."""
         raise NotImplementedError("name() method not implemented")
 
-    def compute(self, data_real: pd.DataFrame, data_synth: pd.DataFrame) -> float:
+    @staticmethod
+    def type() -> str:
+        """Return the type of the metric."""
+        raise NotImplementedError("type() method not implemented")
+
+    @staticmethod
+    def direction() -> str:
+        """Return the direction of the metric."""
+        raise NotImplementedError("direction() method not implemented")
+
+    def compute(
+        self,
+        data_real: pd.DataFrame,
+        data_synth: pd.DataFrame,
+        data_holdout: Union[pd.DataFrame, None] = None,
+    ) -> float:
         """Compute the metric."""
         raise NotImplementedError("compute() method not implemented")
 

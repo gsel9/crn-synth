@@ -33,26 +33,34 @@ class SynthExperiment:
         metrics: list,
         synth_pipe: BaseSynthPipe,
         path_out: Union[str, Path],
+        verbose=1,
     ):
         # TODO: add optional save output and optional metric computation
+        # TODO: compute metrics over already generated datasets instead of generators
         self.experiment_name = experiment_name
         self.generators = generators
         self.metrics = metrics
         self.synth_pipe = synth_pipe
         self.path_out = path_out
+        self.verbose = verbose
 
         # learned attributes
         self.config_ = {}
         self.scores_ = {}
 
-    def run(self, data_real: pd.DataFrame):
+    def run(
+        self, data_real: pd.DataFrame, data_holdout: Union[pd.DataFrame, None] = None
+    ):
         """Run the synthesis experiment"""
         # create output directory
         create_dir(self.path_out, sub_dirs=["synthetic_data", "generators"])
 
+        # TODO: add option to run in parallel
+
         # iterate over generators
         for generator in self.generators:
-            self.config_["generators"][generator.name] = generator.__dict__
+            if self.verbose:
+                print(f"Running synthesis experiment for {generator.name}")
 
             # run the synthesis experiment
             self.synth_pipe.set_generator(generator)
@@ -62,7 +70,7 @@ class SynthExperiment:
             self.scores_[generator.name] = {}
             for metric in self.metrics:
                 self.scores_[generator.name][metric.name] = metric.compute(
-                    data_real, data_synth
+                    data_real, data_synth, data_holdout
                 )
 
             # save the synth data and generator
@@ -78,13 +86,21 @@ class SynthExperiment:
             Path(self.path_out) / f"{self.experiment_name}_scores.csv", index=False
         )
 
-        #: todo save config
+        # save experiment configuration
+        self._save_config()
 
-    def _init_config(self):
-        """Create the configuration file for the synthesis experiment"""
+    def _save_config(self):
+        """Save configuration and hyperparameter settings used to disk"""
         self.config_["experiment_name"] = self.experiment_name
         self.config_["synth_pipe"] = self.synth_pipe.__dict__
         self.config_["generators"] = {}
+        for generator in self.generators:
+            self.config_["generators"][generator.name] = generator.__dict__
+
+        with open(
+            Path(self.path_out) / f"{self.experiment_name}_config.json", "w"
+        ) as outfile:
+            json.dump(self.config_, outfile, indent=4)
 
 
 class SynthExperimentConfig:
