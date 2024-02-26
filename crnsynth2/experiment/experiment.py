@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Union
 import pandas as pd
 from joblib import Parallel, delayed
 
-from crnsynth2.generators.base import BaseGenerator
-from crnsynth2.metrics.base import BaseMetric
-from crnsynth2.process.pipeline.synthpipe import BaseSynthPipe
+from crnsynth2.generators.base_generator import BaseGenerator
+from crnsynth2.metrics.base_metric import BaseMetric
+from crnsynth2.process.synthpipe.base_pipe import BaseSynthPipe
 
 
 def create_dir(path_to_dir, sub_dirs):

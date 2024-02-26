@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Union
 import numpy as np
 import pandas as pd
 
-from crnsynth2.metrics.base import BaseMetric
+from crnsynth2.metrics.base_metric import BaseMetric
 from crnsynth2.metrics.privacy.utils import compute_distance_nn
 
 

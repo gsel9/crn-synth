@@ -3,7 +3,7 @@ from typing import Any, List
 import pandas as pd
 from synthesis.synthesizers.marginal import MarginalSynthesizer
 
-from crnsynth2.generators.base import BaseGenerator
+from crnsynth2.generators.base_generator import BaseGenerator
 
 
 class MarginalGenerator(BaseGenerator):
