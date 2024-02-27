@@ -3,13 +3,33 @@ from synthesis.transformers.generalization import (
     sample_from_binned_column,
 )
 
-from crnsynth2.synthpipes.generalized_synthpipe import GeneralizedSynthPipe
+from crnsynth2.synthpipes.dp_synthpipe import DPParam, DPPipeline
+from examples.adult.adult_config import AGE_BOUNDS, HOURS_PER_WEEK_BOUNDS
+
+# parameters to compute differentially private which are used for the reverse generalization
+DP_PARAMS = [
+    DPParam(stat_name="mean", column="age", epsilon=0.025, bounds=AGE_BOUNDS),
+    DPParam(stat_name="std", column="age", epsilon=0.025, bounds=AGE_BOUNDS),
+    DPParam(
+        stat_name="mean",
+        column="hours-per-week",
+        epsilon=0.025,
+        bounds=HOURS_PER_WEEK_BOUNDS,
+    ),
+    DPParam(
+        stat_name="std",
+        column="hours-per-week",
+        epsilon=0.025,
+        bounds=HOURS_PER_WEEK_BOUNDS,
+    ),
+]
 
 
-class AdultSynthPipe(GeneralizedSynthPipe):
+class AdultSynthPipe(DPPipeline):
     def __init__(
         self,
         generator,
+        dp_params=DP_PARAMS,
         random_state=None,
         test_size=0.2,
         target_column=None,
@@ -18,6 +38,7 @@ class AdultSynthPipe(GeneralizedSynthPipe):
     ) -> None:
         super().__init__(
             generator=generator,
+            dp_params=dp_params,
             random_state=random_state,
             test_size=test_size,
             generalize=generalize,
@@ -53,8 +74,8 @@ class AdultSynthPipe(GeneralizedSynthPipe):
             df=data_real,
             column_name="age",
             n_bins=5,
-            col_min=17,
-            col_max=90,
+            col_min=AGE_BOUNDS[0],
+            col_max=AGE_BOUNDS[1],
             strategy="quantile",
         )
 
@@ -62,8 +83,8 @@ class AdultSynthPipe(GeneralizedSynthPipe):
             df=data_real,
             column_name="hours-per-week",
             n_bins=5,
-            col_min=1,
-            col_max=99,
+            col_min=HOURS_PER_WEEK_BOUNDS[0],
+            col_max=HOURS_PER_WEEK_BOUNDS[1],
             strategy="quantile",
         )
         return data_real
@@ -73,8 +94,8 @@ class AdultSynthPipe(GeneralizedSynthPipe):
             df=data_synth,
             column_name="age",
             numeric_type="int",
-            mean=38,
-            std=13,
+            mean=self._get_dp_param("mean", "age"),
+            std=self._get_dp_param("std", "age"),
             random_state=self.random_state,
         )
 
@@ -82,8 +103,8 @@ class AdultSynthPipe(GeneralizedSynthPipe):
             df=data_synth,
             column_name="hours-per-week",
             numeric_type="int",
-            mean=40,
-            std=10,
+            mean=self._get_dp_param("mean", "hours-per-week"),
+            std=self._get_dp_param("std", "hours-per-week"),
             random_state=self.random_state,
         )
         return data_synth

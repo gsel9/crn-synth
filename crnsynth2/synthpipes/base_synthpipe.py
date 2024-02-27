@@ -41,6 +41,9 @@ class BaseSynthPipe:
 
     def fit(self, data_real: pd.DataFrame) -> "BaseSynthPipe":
         """Fit generator on processed real data"""
+        # ensure random state is equal to pipeline random state
+        self.generator.random_state = self.random_state
+
         self.generator.fit(data_real)
         return self
 
