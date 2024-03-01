@@ -46,7 +46,7 @@ class BaseGenerator:
             return pickle.load(f)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}()"
+        return f"{self.__class__.__name__}({self.__dict__})"
 
     def __str__(self) -> str:
         return self.__repr__()

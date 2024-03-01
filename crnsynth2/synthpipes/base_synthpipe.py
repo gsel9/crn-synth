@@ -126,9 +126,7 @@ class BaseSynthPipe:
         return data_train, data_holdout
 
     def __repr__(self):
-        msg = f"{self.__class__.__name__}"
-        if self.generator is not None:
-            msg += f"(generator={self.generator.__class__.__name__}({self.generator.__dict__}))"
+        msg = f"{self.__class__.__name__}({self.__dict__})"
         return msg
 
     def __copy__(self):
