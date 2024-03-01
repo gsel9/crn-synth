@@ -28,10 +28,10 @@ DP_PARAMS = [
 class AdultSynthPipe(DPPipeline):
     def __init__(
         self,
-        generator,
+        generator=None,
         dp_params=DP_PARAMS,
         random_state=None,
-        test_size=0.2,
+        holdout_size=0.2,
         target_column=None,
         generalize=True,
         verbose=2,
@@ -40,7 +40,7 @@ class AdultSynthPipe(DPPipeline):
             generator=generator,
             dp_params=dp_params,
             random_state=random_state,
-            test_size=test_size,
+            holdout_size=holdout_size,
             generalize=generalize,
             target_column=target_column,
             verbose=verbose,

@@ -10,7 +10,7 @@ class BaseMetric:
     def __init__(self):
         """Initialize the metric."""
 
-    @property
+    @staticmethod
     def name(self) -> str:
         """Return the name of the metric."""
         raise NotImplementedError("name() method not implemented")
@@ -27,7 +27,7 @@ class BaseMetric:
 
     def compute(
         self,
-        data_real: pd.DataFrame,
+        data_train: pd.DataFrame,
         data_synth: pd.DataFrame,
         data_holdout: Union[pd.DataFrame, None] = None,
     ) -> float:
@@ -35,7 +35,7 @@ class BaseMetric:
         raise NotImplementedError("compute() method not implemented")
 
     def __str__(self):
-        return self.name
+        return self.name()
 
     def __repr__(self):
-        return self.name
+        return f"{self.__class__.__name__}({self.__dict__})"

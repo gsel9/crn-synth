@@ -6,7 +6,7 @@ from synthesis.synthesizers.marginal import MarginalSynthesizer
 from crnsynth2.generators.base_generator import BaseGenerator
 
 
-class MarginalGenerator(BaseGenerator):
+class MarginalGenerator(MarginalSynthesizer, BaseGenerator):
     """Marginal Generator based on the MarginalSynthesizer from synthesis
 
     Generate records based on marginal distribution of columns independently.
@@ -15,12 +15,11 @@ class MarginalGenerator(BaseGenerator):
     def __init__(self, epsilon: float, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.epsilon = epsilon
-        self.model = MarginalSynthesizer(epsilon=epsilon)
 
-    def fit(self, data_real: pd.DataFrame, **kwargs: Any) -> None:
+    def fit(self, data_real: pd.DataFrame) -> None:
         """Fit the model to the real data."""
-        self.model.fit(data_real)
+        super().fit(data_real)
 
     def generate(self, n_records: int) -> pd.DataFrame:
         """Generate records based on the marginal distribution."""
-        return self.model.sample(n_records)
+        return super().sample(n_records)

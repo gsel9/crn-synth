@@ -85,7 +85,7 @@ class NearestNeighborDistanceRatio(BaseMetric):
 
     def compute(
         self,
-        data_real: pd.DataFrame,
+        data_train: pd.DataFrame,
         data_synth: pd.DataFrame,
         data_holdout: pd.DataFrame,
     ) -> Dict:
@@ -94,7 +94,7 @@ class NearestNeighborDistanceRatio(BaseMetric):
 
         # compute distances to closest real record
         distances_holdout, distances_synth = compute_ratio_distances(
-            data_train=data_real,
+            data_train=data_train,
             data_holdout=data_holdout,
             data_synth=data_synth,
             categorical_columns=self.categorical_columns,

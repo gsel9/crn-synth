@@ -21,12 +21,19 @@ def compute_distance_nn(
 
     def gower_distance(x, y, categorical_columns, n_neighbors):
         # set numeric columns to float - needed for gower distance
-        num_cols = [c for c in x.columns if c not in categorical_columns]
+        if categorical_columns is not None:
+            num_cols = [c for c in x.columns if c not in categorical_columns]
+
+            # boolean vector of indices of categorical columns
+            cat_columns_bool_mask = np.array(
+                [c in categorical_columns for c in y.columns]
+            )
+        else:
+            num_cols = x.columns
+            cat_columns_bool_mask = None
+
         x[num_cols] = x[num_cols].astype("float")
         y[num_cols] = y[num_cols].astype("float")
-
-        # boolean vector of indices of categorical columns
-        cat_columns_bool_mask = np.array([c in categorical_columns for c in y.columns])
 
         # compute distance matrix
         dm = gower.gower_matrix(x, y, cat_features=cat_columns_bool_mask)

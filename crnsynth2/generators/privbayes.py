@@ -8,7 +8,7 @@ from synthesis.synthesizers.privbayes import PrivBayes as PrivBayesDK
 from crnsynth2.generators.base_generator import BaseGenerator
 
 
-class PrivBayes(BaseGenerator):
+class PrivBayes(PrivBayesDK, BaseGenerator):
     """PrivBayes implementation from synthesis.
 
     PrivBayes implementation of synthetic-data-generation library (DK). Other implementations can be found in synthcity or DataSynthesizer. However, these only concern the base
@@ -22,12 +22,11 @@ class PrivBayes(BaseGenerator):
     def __init__(self, epsilon, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.epsilon = epsilon
-        self.model = PrivBayesDK(epsilon=epsilon)
 
-    def fit(self, data_real, **kwargs: Any) -> None:
+    def fit(self, data_real) -> None:
         """Fit the model to the real data."""
-        self.model.fit(data_real)
+        super().fit(data_real)
 
     def generate(self, n_records: int) -> pd.DataFrame:
         """Generate records based on the trained model."""
-        return self.model.sample(n_records)
+        return super().sample(n_records)

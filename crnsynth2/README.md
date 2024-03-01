@@ -34,9 +34,8 @@ This library is structured in the following manner:
   - privacy/ - evaluating privacy risk of the synthetic data
   - similarity/ - computing the statistical similarity of the synthetic data 
 - generators/ - custom generators that can be used alongside third-party generators
-- process/ - define and run a single synthesis pipeline on your dataset
-  - pipeline/ - a structured approach from raw to synth
-  - data/ - functions to process the original and synthetic data
+- process/ - functions to process the original and synthetic data
+- synthpipes/ - a structured approach from raw to synth
 
 
 All code in this library is dataset-agnostic. When applying it to a particular dataset and use case, you inherit all functionality from this library to define your own pipeline and run a set of experiments. 

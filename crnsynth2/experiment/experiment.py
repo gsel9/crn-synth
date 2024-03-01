@@ -7,20 +7,10 @@ from typing import Any, Dict, List, Union
 import pandas as pd
 from joblib import Parallel, delayed
 
+from crnsynth2.experiment import utils
 from crnsynth2.generators.base_generator import BaseGenerator
 from crnsynth2.metrics.base_metric import BaseMetric
-from crnsynth2.process.synthpipe.base_pipe import BaseSynthPipe
-
-
-def create_dir(path_to_dir, sub_dirs):
-    """Ensure output directory for results exists."""
-
-    if not os.path.exists(path_to_dir):
-        os.makedirs(path_to_dir)
-
-    for subdir in sub_dirs:
-        if not os.path.exists(path_to_dir / subdir):
-            os.makedirs(path_to_dir / subdir)
+from crnsynth2.synthpipes.base_synthpipe import BaseSynthPipe
 
 
 class SynthExperiment:
@@ -29,18 +19,16 @@ class SynthExperiment:
     def __init__(
         self,
         experiment_name: str,
-        generators: list,
+        synth_pipes: List[BaseSynthPipe],
         metrics: list,
-        synth_pipe: BaseSynthPipe,
         path_out: Union[str, Path],
         verbose=1,
     ):
         # TODO: add optional save output and optional metric computation
         # TODO: compute metrics over already generated datasets instead of generators
         self.experiment_name = experiment_name
-        self.generators = generators
+        self.synth_pipes = synth_pipes
         self.metrics = metrics
-        self.synth_pipe = synth_pipe
         self.path_out = path_out
         self.verbose = verbose
 
@@ -48,37 +36,40 @@ class SynthExperiment:
         self.config_ = {}
         self.scores_ = {}
 
-    def run(
-        self, data_real: pd.DataFrame, data_holdout: Union[pd.DataFrame, None] = None
-    ):
+    def run(self, data_real: pd.DataFrame, n_records: Union[int, None] = None):
         """Run the synthesis experiment"""
         # create output directory
-        create_dir(self.path_out, sub_dirs=["synthetic_data", "generators"])
+        utils.create_dir(self.path_out, sub_dirs=["synthetic_data", "generators"])
 
         # TODO: add option to run in parallel
 
-        # iterate over generators
-        for generator in self.generators:
+        # iterate over synth pipelines
+        for synth_pipe in self.synth_pipes:
             if self.verbose:
-                print(f"Running synthesis experiment for {generator.name}")
+                print(f"Running synthesis experiment for {synth_pipe.generator.name}")
 
             # run the synthesis experiment
-            self.synth_pipe.set_generator(generator)
-            data_synth = self.synth_pipe.run(data_real)
+            data_out = synth_pipe.run(data_real, n_records=n_records)
 
             # compute metrics
-            self.scores_[generator.name] = {}
+            self.scores_[synth_pipe.generator.name] = {}
             for metric in self.metrics:
-                self.scores_[generator.name][metric.name] = metric.compute(
-                    data_real, data_synth, data_holdout
+                self.scores_[synth_pipe.generator.name][metric.name] = metric.compute(
+                    data_train=data_out["train"],
+                    data_synth=data_out["synth"],
+                    data_holdout=data_out["holdout"],
                 )
 
-            # save the synth data and generator
-            fname = f"{self.experiment_name}_{generator.name}"
-            data_synth.to_csv(
+            # save the synth data
+            fname = f"{self.experiment_name}_{synth_pipe.generator.name}"
+            data_out["synth"].to_csv(
                 Path(self.path_out) / "synthetic_data" / f"{fname}.csv", index=False
             )
-            generator.save(Path(self.path_out) / "generators" / f"{fname}.pkl")
+
+            # save the generator
+            synth_pipe.generator.save(
+                Path(self.path_out) / "generators" / f"{fname}.pkl"
+            )
 
         # save scores
         df_scores = pd.DataFrame.from_dict(self.scores_, orient="index")
