@@ -65,7 +65,7 @@ class BaseSynthPipe:
 
     def run(
         self, data_real, n_records: Union[int, None] = None
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    ) -> Dict[str, pd.DataFrame]:
         """Run all steps in synthesis pipeline. User can run these steps one by one themselves as well."""
         # process real data
         data_real = self.process_data(data_real)

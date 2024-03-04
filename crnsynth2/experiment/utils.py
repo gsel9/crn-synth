@@ -22,7 +22,8 @@ def init_synthpipes(synth_pipes, generators, param_grid=None):
     synth_pipes_exp = []
     for synth_pipe in synth_pipes:
         for generator in generators:
-            sp = synth_pipe.__copy__().set_generator(generator)
+            sp = synth_pipe.__copy__()
+            sp.set_generator(generator.__copy__())
 
             # loop over parameter options
             if param_grid is not None:
