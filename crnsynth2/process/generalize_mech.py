@@ -13,12 +13,12 @@ class BaseGeneralizationMech(TransformerMixin, BaseEstimator):
     """Base class for generalization mechanisms."""
 
     def __init__(
-        self, column, epsilon, bins, bounds, inverse, ignore_nan, random_state=None
+        self, column, bins, bounds, epsilon, inverse, ignore_nan, random_state=None
     ):
         self.column = column
-        self.epsilon = epsilon
         self.bins = bins
         self.bounds = bounds
+        self.epsilon = epsilon
         self.inverse = inverse
         self.ignore_nan = ignore_nan
         self.random_state = random_state
@@ -37,9 +37,6 @@ class BaseGeneralizationMech(TransformerMixin, BaseEstimator):
 
     def _check_params(self):
         """Check the parameters of the generalization mechanism."""
-        if self.epsilon is None:
-            raise ValueError("Epsilon must be provided.")
-
         if len(self.bounds) != 2:
             raise ValueError("Bounds must be a tuple of length 2.")
 
@@ -64,13 +61,19 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
     def __init__(
         self,
         column,
-        epsilon,
         bins,
         bounds,
+        epsilon=None,
         inverse="truncated_normal",
         ignore_nan=True,
         random_state=None,
     ):
+        if inverse == "uniform" and epsilon is not None:
+            print(
+                "No epsilon needed for inverse using uniform distribution. Epsilon will be set to None."
+            )
+            epsilon = None
+
         super().__init__(
             column=column,
             epsilon=epsilon,
@@ -109,29 +112,34 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
         """Transform the data using the generalization mechanism."""
         data = data.copy()
 
+        # only transform non-nan values
+        mask_nan = self._get_mask_nan(data)
+        array = data.loc[~mask_nan, self.column]
+
         # clip values outside of bounds
-        array = np.clip(data[self.column], self.bounds[0], self.bounds[1])
+        array = np.clip(array, self.bounds[0], self.bounds[1])
 
         # bin the data
-        binned_data = np.digitize(array, self.bin_edges_[1:], right=False)
-        data[self.column] = binned_data
+        binned_data = np.digitize(array, self.bin_edges_)
+
+        # replace non-nan values with binned values
+        data.loc[~mask_nan, self.column] = binned_data
         return data
 
     def inverse_transform(self, data):
         """Inverse transform the data using the generalization mechanism."""
         data = data.copy()
 
-        # mask nan values or keep all data
-        if self.ignore_nan:
-            mask_nan = data[self.column].isna()
-        else:
-            mask_nan = np.zeros(data.shape[0], dtype=bool)
+        # only inverse transform non-nan values
+        mask_nan = self._get_mask_nan(data)
+        array = data.loc[~mask_nan, self.column]
 
-        array = data[self.column][~mask_nan]
+        # ensure integer bins as nan-values may have converted bins to float
+        array = np.int_(array)
 
         # get bounds of bins
-        low_bound = self.bin_edges_[array]
-        up_bound = self.bin_edges_[array + 1]
+        low_bound = self.bin_edges_[array - 1]
+        up_bound = self.bin_edges_[array]
 
         # sample from uniform distribution
         if self.inverse == "uniform":
@@ -173,13 +181,19 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
 
         return super()._check_data(data)
 
+    def _get_mask_nan(self, data):
+        """Get the mask for nan values."""
+        if self.ignore_nan:
+            return data[self.column].isna()
+        return np.zeros(data.shape[0], dtype=bool)
+
     @staticmethod
     def _get_bin_edges(bins, bounds):
         """Get the bin edges based on bounds or check if provided bins are monotonically increasing."""
         # get equal-width bins when bins is integer
         if isinstance(bins, int):
             # take uniform bins
-            bin_edges = np.linspace(bounds[0], bounds[1], bins)
+            bin_edges = np.linspace(bounds[0], bounds[1], bins + 1)
 
             # round to 2 decimals
             bin_edges = np.round(bin_edges, 2)
@@ -190,37 +204,3 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
             if np.any(bin_edges[:-1] > bin_edges[1:]):
                 raise ValueError("`bins` must increase monotonically, when an array")
         return bin_edges
-
-
-class CategoricalGeneralizationMech(BaseGeneralizationMech):
-    """Generalization mechanism for categorical data"""
-
-    def __init__(self, epsilon, inverse="uniform", random_state=None):
-        self.epsilon = epsilon
-        self.inverse = inverse
-        self.random_state = random_state
-
-    def fit(self, data, bounds):
-        """Fit the generalization mechanism to the data."""
-        self._check_params()
-
-        if self.inverse == "uniform":
-            pass
-
-    def transform(self, data):
-        pass
-
-    def _check_data(self, data, bounds):
-        """Check the data for the generalization mechanism."""
-        # check if data is categorical
-        if not data.dtype == "object":
-            raise ValueError("Data must be categorical.")
-
-        return super()._check_data(data, bounds)
-
-    def _check_params(self):
-        """Check the parameters of the generalization mechanism."""
-        if self.inverse not in ["uniform"]:
-            raise ValueError("Inverse transformation must be 'uniform'.")
-
-        return super()._check_params()

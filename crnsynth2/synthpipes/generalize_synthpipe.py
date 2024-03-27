@@ -1,45 +1,42 @@
-from typing import Dict, Iterable, List, Union
+from typing import Dict, List, Union
 
 import pandas as pd
 
 from crnsynth2.generators.base_generator import BaseGenerator
-from crnsynth2.process.dp_stats import DPParam, dp_mean, dp_std
-from crnsynth2.synthpipes.generalized_synthpipe import GeneralizedSynthPipe
+from crnsynth2.process.generalize_mech import BaseGeneralizationMech
+from crnsynth2.synthpipes.base_synthpipe import BaseSynthPipe
 
 
-class DPPipeline(GeneralizedSynthPipe):
-    """Synthesis pipeline with generalization and option to compute differentially private params"""
+class GeneralizedSynthPipe(BaseSynthPipe):
+    """Pipeline for synthesizing data with generalization. This pipeline includes steps for generalizing data before synthesis and reversing generalization after synthesis."""
 
     def __init__(
         self,
         generator: Union[BaseGenerator, None] = None,
-        dp_params: Union[List[DPParam], None] = None,
         random_state: Union[int, None] = None,
         verbose: int = 1,
-        generalize: bool = False,
+        generalizers: Union[List[BaseGeneralizationMech], None] = None,
         holdout_size: float = 0.2,
         target_column: Union[str, None] = None,
-    ):
+    ) -> None:
         """Initialize synthesis pipeline.
 
         Args:
             generator: Generator to use for synthesizing data
-            dp_params: List of differentially private parameters to compute
             random_state: Random state
             verbose: Verbosity level
-            generalize: Whether to generalize data before synthesis
+            generalizers: List of generalization mechanisms to use
             holdout_size: Proportion of data to use for holdout
             target_column: Name of column to use as target variable for stratifying train and test
         """
         super().__init__(
             generator=generator,
             random_state=random_state,
-            verbose=verbose,
-            generalize=generalize,
             holdout_size=holdout_size,
-            target_column=target_column,
+            verbose=verbose,
         )
-        self.dp_params = dp_params
+        self.generalizers = generalizers
+        self.target_column = target_column
 
     def run(
         self, data_real, n_records: Union[int, None] = None
@@ -51,15 +48,11 @@ class DPPipeline(GeneralizedSynthPipe):
         # split into training and testing data to allow for evaluation with unseen data
         data_train, data_holdout = self._split_data(data_real)
 
-        # compute differentially private params
-        self._compute_dp_params(data_train)
-
-        if self.verbose:
-            self._compute_total_epsilon()
-
         # generalize data by binning numeric columns or grouping nominal columns
-        if self.generalize:
+        if self.generalizers:
             data_train_input = self._generalize_data(data_train)
+            if self.verbose:
+                self._compute_total_epsilon()
         else:
             data_train_input = data_train
 
@@ -71,7 +64,7 @@ class DPPipeline(GeneralizedSynthPipe):
         data_synth = self.generate(n_records)
 
         # reverse generalization of synthetic data
-        if self.generalize:
+        if self.generalizers:
             data_synth = self._reverse_generalization(data_synth)
 
         # postprocess synthetic data
@@ -85,39 +78,45 @@ class DPPipeline(GeneralizedSynthPipe):
         }
         return data_out
 
-    def _compute_dp_params(self, data_train: pd.DataFrame) -> None:
-        """Compute differentially private params"""
-        # compute dp params
-        if self.dp_params is None:
-            raise ValueError("No differentially private parameters have been set.")
+    def _generalize_data(self, data_real: pd.DataFrame) -> pd.DataFrame:
+        """Generalize data by binning numeric columns or grouping nominal columns"""
+        for generalizer in self.generalizers:
+            data_real = generalizer.fit_transform(data_real)
+        return data_real
 
-        for dp_param in self.dp_params:
-            # ensure random state and verbosity level is equal to pipeline
-            dp_param.random_state = self.random_state
-            dp_param.verbose = self.verbose
+    def _reverse_generalization(self, data_synth: pd.DataFrame) -> pd.DataFrame:
+        """Reverse generalization of synthetic data"""
+        for generalizer in self.generalizers:
+            data_synth = generalizer.inverse_transform(data_synth)
+        return data_synth
 
-            # compute dp param - value is stored in object
-            dp_param.compute(data_train)
+    def _check_params(self) -> None:
+        """Check that all parameters are set"""
+        if self.generalizers is None:
+            raise ValueError("No generalizers have been set.")
 
-    def _get_dp_param(self, stat_name, column):
-        """Get differentially private parameter"""
-        if not hasattr(self.dp_params[0], "param_"):
-            raise ValueError(
-                "Differentially private parameters have not been computed yet, run .run() first."
-            )
+        # consistent random state for all classes
+        if self.random_state is not None:
+            for generalizer in self.generalizers:
+                generalizer.random_state = self.random_state
+            self.generator.random_state = self.random_state
 
-        return next(
-            dp_param.param_
-            for dp_param in self.dp_params
-            if dp_param.stat_name == stat_name and dp_param.column == column
-        )
+        # consistent verbosity level for all classes
+        if self.verbose:
+            for generalizer in self.generalizers:
+                generalizer.verbose = self.verbose
+            self.generator.verbose = self.verbose
 
     def _compute_total_epsilon(self):
         """Compute total epsilon value for synthesis"""
-        epsilon_params = sum([dp_param.epsilon for dp_param in self.dp_params])
+        epsilon_generalizers = 0
+        for generalizer in self.generalizers:
+            if generalizer.epsilon is not None:
+                epsilon_generalizers += generalizer.epsilon
+
         epsilon_generator = (
             self.generator.epsilon if hasattr(self.generator, "epsilon") else 0
         )
-        print(f"\nEpsilon params: {epsilon_params}")
+        print(f"\nEpsilon generalizers: {epsilon_generalizers}")
         print(f"Epsilon generator: {epsilon_generator}")
-        print(f"Total epsilon: {epsilon_params + epsilon_generator}\n")
+        print(f"Total epsilon: {epsilon_generalizers + epsilon_generator}\n")
