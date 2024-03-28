@@ -12,15 +12,12 @@ from crnsynth2.process.dp_stats import dp_mean, dp_std
 class BaseGeneralizationMech(TransformerMixin, BaseEstimator):
     """Base class for generalization mechanisms."""
 
-    def __init__(
-        self, column, bins, bounds, epsilon, inverse, ignore_nan, random_state=None
-    ):
+    def __init__(self, column, bins, bounds, epsilon, inverse, random_state=None):
         self.column = column
         self.bins = bins
         self.bounds = bounds
         self.epsilon = epsilon
         self.inverse = inverse
-        self.ignore_nan = ignore_nan
         self.random_state = random_state
 
     def fit(self, data):
@@ -65,7 +62,6 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
         bounds,
         epsilon=None,
         inverse="truncated_normal",
-        ignore_nan=True,
         random_state=None,
     ):
         if inverse == "uniform" and epsilon is not None:
@@ -80,7 +76,6 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
             bins=bins,
             bounds=bounds,
             inverse=inverse,
-            ignore_nan=ignore_nan,
             random_state=random_state,
         )
 
@@ -90,17 +85,23 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
         self._check_data(data)
         self.bin_edges_ = self._get_bin_edges(bins=self.bins, bounds=self.bounds)
 
+        # save dp mean and std for inverse transformation prior to generalization
         if self.inverse == "truncated_normal":
-            # save dp mean and std for inverse transformation prior to generalization
+            # only compute based on non-nan values
+            array = self._get_array(data)
+
+            # split epsilon budget for mean and std
             eps_param = self.epsilon / 2
+
+            # compute dp mean and std
             self.dp_mean_ = dp_mean(
-                array=data[self.column],
+                array=array,
                 epsilon=eps_param,
                 bounds=self.bounds,
                 random_state=self.random_state,
             )
             self.dp_std_ = dp_std(
-                array=data[self.column],
+                array=array,
                 epsilon=eps_param,
                 bounds=self.bounds,
                 random_state=self.random_state,
@@ -113,17 +114,16 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
         data = data.copy()
 
         # only transform non-nan values
-        mask_nan = self._get_mask_nan(data)
-        array = data.loc[~mask_nan, self.column]
+        array = self._get_array(data)
 
         # clip values outside of bounds
         array = np.clip(array, self.bounds[0], self.bounds[1])
 
         # bin the data
-        binned_data = np.digitize(array, self.bin_edges_)
+        binned_data = np.digitize(array, self.bin_edges_[1:], right=True)
 
         # replace non-nan values with binned values
-        data.loc[~mask_nan, self.column] = binned_data
+        data.loc[~data[self.column].isna(), self.column] = binned_data
         return data
 
     def inverse_transform(self, data):
@@ -131,15 +131,14 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
         data = data.copy()
 
         # only inverse transform non-nan values
-        mask_nan = self._get_mask_nan(data)
-        array = data.loc[~mask_nan, self.column]
+        array = self._get_array(data)
 
         # ensure integer bins as nan-values may have converted bins to float
         array = np.int_(array)
 
         # get bounds of bins
-        low_bound = self.bin_edges_[array - 1]
-        up_bound = self.bin_edges_[array]
+        low_bound = self.bin_edges_[array]
+        up_bound = self.bin_edges_[array + 1]
 
         # sample from uniform distribution
         if self.inverse == "uniform":
@@ -161,7 +160,7 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
                 sampled_values = np.around(sampled_values, decimals=0).astype(int)
 
         # replace non-nan values with sampled values
-        data.loc[~mask_nan, self.column] = sampled_values
+        data.loc[~data[self.column].isna(), self.column] = sampled_values
         return data
 
     def _check_params(self):
@@ -181,11 +180,10 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
 
         return super()._check_data(data)
 
-    def _get_mask_nan(self, data):
-        """Get the mask for nan values."""
-        if self.ignore_nan:
-            return data[self.column].isna()
-        return np.zeros(data.shape[0], dtype=bool)
+    def _get_array(self, data):
+        """Get the array for generalization."""
+        # only transform non-nan values
+        return data.loc[~data[self.column].isna(), self.column]
 
     @staticmethod
     def _get_bin_edges(bins, bounds):

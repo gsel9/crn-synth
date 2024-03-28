@@ -1,29 +1,6 @@
-from synthesis.transformers.generalization import (
-    bin_numeric_column,
-    sample_from_binned_column,
-)
-
 from crnsynth2.process.generalize_mech import NumericGeneralizationMech
 from crnsynth2.synthpipes.generalize_synthpipe import GeneralizedSynthPipe
 from examples.adult.adult_config import AGE_BOUNDS, HOURS_PER_WEEK_BOUNDS
-
-# # parameters to compute differentially private which are used for the reverse generalization
-# DP_PARAMS = [
-#     DPParam(stat_name="mean", column="age", epsilon=0.025, bounds=AGE_BOUNDS),
-#     DPParam(stat_name="std", column="age", epsilon=0.025, bounds=AGE_BOUNDS),
-#     DPParam(
-#         stat_name="mean",
-#         column="hours-per-week",
-#         epsilon=0.025,
-#         bounds=HOURS_PER_WEEK_BOUNDS,
-#     ),
-#     DPParam(
-#         stat_name="std",
-#         column="hours-per-week",
-#         epsilon=0.025,
-#         bounds=HOURS_PER_WEEK_BOUNDS,
-#     ),
-# ]
 
 GEN_MECHS = [
     NumericGeneralizationMech(column="age", epsilon=0.05, bins=5, bounds=AGE_BOUNDS),

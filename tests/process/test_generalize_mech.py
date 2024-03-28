@@ -67,3 +67,21 @@ def test_numeric_generalization_mech_inverse_transform_with_truncated_normal_inv
     transformed_data = mech.transform(data)
     inverse_transformed_data = mech.inverse_transform(transformed_data)
     assert inverse_transformed_data["test"].between(0, 1).all()
+
+
+# test inverse with nan value
+def test_numeric_generalization_mech_inverse_transform_with_nan_value():
+    mech = NumericGeneralizationMech(
+        column="test", epsilon=1.0, bins=10, bounds=(0, 1), inverse="truncated_normal"
+    )
+    data = pd.DataFrame({"test": np.random.rand(100)})
+    data.loc[0, "test"] = np.nan
+    mech.fit(data)
+    transformed_data = mech.transform(data)
+    inverse_transformed_data = mech.inverse_transform(transformed_data)
+    assert (
+        inverse_transformed_data["test"][~inverse_transformed_data.test.isna()]
+        .between(0, 1)
+        .all()
+    )
+    assert np.isnan(inverse_transformed_data.loc[0, "test"])
