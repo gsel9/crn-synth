@@ -1,5 +1,6 @@
+from deprecated.synthpipes import GeneralizedSynthPipe
+
 from crnsynth2.process.generalize_mech import NumericGeneralizationMech
-from crnsynth2.synthpipes.generalize_synthpipe import GeneralizedSynthPipe
 from examples.adult.adult_config import AGE_BOUNDS, HOURS_PER_WEEK_BOUNDS
 
 GEN_MECHS = [

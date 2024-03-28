@@ -2,15 +2,13 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import List, Union
 
 import pandas as pd
+from deprecated.synthpipes import BaseSynthPipe
 from joblib import Parallel, delayed
 
 from crnsynth2.experiment import utils
-from crnsynth2.generators.base_generator import BaseGenerator
-from crnsynth2.metrics.base_metric import BaseMetric
-from crnsynth2.synthpipes.base_synthpipe import BaseSynthPipe
 
 
 class SynthExperiment:

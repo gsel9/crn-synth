@@ -1,0 +1,28 @@
+"""Pre-processing functions for real data before synthesis"""
+from typing import Union
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+
+def split_train_holdout(
+    data_real: pd.DataFrame,
+    target_column=None,
+    holdout_size: float = 0.2,
+    random_state: Union[None, int] = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Split data into training and holdout sets. Optionally stratify based on target column."""
+    if holdout_size > 0:
+        # stratify based on target column if specified
+        stratify = None if target_column is None else data_real[target_column]
+
+        data_train, data_holdout = train_test_split(
+            data_real,
+            test_size=holdout_size,
+            stratify=stratify,
+            random_state=random_state,
+        )
+    else:
+        data_train = data_real
+        data_holdout = pd.DataFrame()
+    return data_train, data_holdout
