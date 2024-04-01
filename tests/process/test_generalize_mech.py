@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from crnsynth2.process.generalize_mech import NumericGeneralizationMech
+from crnsynth2.process.generalization import NumericGeneralizationMech
 
 
 def test_numeric_generalization_mech_initialization_with_uniform_inverse():

@@ -1,8 +1,10 @@
 """Pre-processing functions for real data before synthesis"""
-from typing import Union
+from typing import List, Union
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
+
+from crnsynth2.process.generalization import BaseGeneralizationMech
 
 
 def split_train_holdout(
@@ -26,3 +28,17 @@ def split_train_holdout(
         data_train = data_real
         data_holdout = pd.DataFrame()
     return data_train, data_holdout
+
+
+def generalize_data(
+    data_real: pd.DataFrame, generalizers: List[BaseGeneralizationMech]
+) -> pd.DataFrame:
+    """Generalize data using a list of generalization mechanisms."""
+    data_gen = data_real.copy()
+    for gen_mech in generalizers:
+        data_gen = gen_mech.fit_transform(data_gen)
+    return data_gen, generalizers
+
+
+def split_data(df, holdout_size, random_state):
+    return None
