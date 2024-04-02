@@ -4,9 +4,9 @@ from typing import Dict, List, Union
 
 import pandas as pd
 
-from crnsynth2.generators.base_generator import BaseGenerator
-from crnsynth2.process import postprocessing, preprocessing
-from crnsynth2.process.generalization import (
+from crnsynth.generators.base_generator import BaseGenerator
+from crnsynth.process import postprocessing, preprocessing
+from crnsynth.process.generalization import (
     BaseGeneralizationMech,
     NumericGeneralizationMech,
 )
