@@ -33,6 +33,7 @@ This library is structured in the following manner:
   - similarity/ - computing the statistical similarity of the synthetic data 
 - generators/ - custom generators that can be used alongside third-party generators
 - process/ - functions to process the original and synthetic data
+- visuals/ - functions to visualize the original and synthetic data
 
 All code in this library is dataset-agnostic. When applying it to a particular dataset and use case, you inherit all functionality from this library to define your own pipeline and run a set of experiments. 
 An example on the adult dataset is provided in the examples/ folder
