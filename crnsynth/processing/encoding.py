@@ -46,15 +46,3 @@ def encode_data(data: pd.DataFrame, encoders: ColumnTransformer):
         data_enc, columns=encoders.get_feature_names_out(data.columns)
     )
     return data_enc, encoders
-
-
-def decode_data(data_enc: pd.DataFrame, encoders: ColumnTransformer):
-    """Decode data using a ColumnTransformer"""
-    # inverse transform the data
-    data_dec = encoders.inverse_transform(data_enc)
-
-    # convert the transformed data to a DataFrame
-    data_dec = pd.DataFrame(
-        data_dec, columns=encoders.get_feature_names_out(data_enc.columns)
-    )
-    return data_dec
