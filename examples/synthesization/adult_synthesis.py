@@ -5,8 +5,8 @@ from typing import Dict, List, Union
 import pandas as pd
 
 from crnsynth.generators.base_generator import BaseGenerator
-from crnsynth.process import postprocessing, preprocessing
-from crnsynth.process.generalization import (
+from crnsynth.processing import postprocessing, preprocessing
+from crnsynth.processing.generalization import (
     BaseGeneralizationMech,
     NumericGeneralizationMech,
 )
@@ -51,6 +51,6 @@ def preprocess_real_data(data_real: pd.DataFrame) -> pd.DataFrame:
 
 
 def postprocess_synthetic_data(data_synth: pd.DataFrame) -> pd.DataFrame:
-    """Post-process synthetic data after generation."""
+    """Post-processing synthetic data after generation."""
     # no post-processing needed for this dataset
     return data_synth

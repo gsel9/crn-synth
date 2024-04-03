@@ -26,7 +26,7 @@ Moreover, we add our own custom generators and metrics alongside these libraries
 
 ## Library structure
 This library is structured in the following manner:
-- experiment/ - run and compare multiple synthesis pipelines in parallel
+- checks/ - functions to check the validity of data, settings and models
 - metrics/ - metrics for evaluating the synthetic data with respect to the original data
   - performance/ - comparing the performance of models (e.g. ML, survival analysis, etc)
   - privacy/ - evaluating privacy risk of the synthetic data

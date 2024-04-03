@@ -1,4 +1,4 @@
-"""Functions for seraliazing and deserializing data."""
+"""Functions for loading data from disk"""
 
 import json
 import os

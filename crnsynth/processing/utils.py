@@ -1,4 +1,4 @@
-"""Utility functions"""
+"""Utility functions for processing data."""
 
 
 def reduce_dict(dictionary, keys_to_keep):

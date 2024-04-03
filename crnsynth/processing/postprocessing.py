@@ -3,7 +3,7 @@ from typing import List
 
 import pandas as pd
 
-from crnsynth.process.generalization import BaseGeneralizationMech
+from crnsynth.processing.generalization import BaseGeneralizationMech
 
 
 def reverse_generalization(

@@ -1,7 +1,4 @@
-"""Compute stats from real data."""
-from typing import Iterable, Union
-
-import pandas as pd
+"""Compute differentially private statistics from data."""
 from diffprivlib.tools.quantiles import median, quantile
 from diffprivlib.tools.utils import mean, std, var
 

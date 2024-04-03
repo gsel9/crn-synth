@@ -1,35 +1,12 @@
-"""Functions to run synthesis pipeline on real data."""
 from typing import Dict, List, Union
 
 import pandas as pd
 
+from crnsynth.checks.params import check_param_consistency
 from crnsynth.generators.base_generator import BaseGenerator
-from crnsynth.process import check, postprocessing, preprocessing, utils
-from crnsynth.process.generalization import BaseGeneralizationMech
-
-
-def generate_synth_data(
-    data_real: pd.DataFrame,
-    generator: BaseGenerator,
-    n_records: Union[None, int],
-    verbose: int = 1,
-) -> tuple[pd.DataFrame, BaseGenerator]:
-    """Generate synthetic data using a generator."""
-    if n_records is None:
-        n_records = data_real.shape[0]
-
-    # fit generator
-    if verbose:
-        print(f"Fitting generator {generator} on input data")
-    generator.fit(data_real)
-
-    # generate synthetic data
-    if verbose:
-        print(f"Generator fitted. Generating {n_records} records")
-    data_synth = generator.generate(n_records)
-
-    # return synthetic data and fitted generator
-    return data_synth, generator
+from crnsynth.processing import postprocessing, preprocessing, utils
+from crnsynth.processing.generalization import BaseGeneralizationMech
+from crnsynth.synthesization.generation import generate_synth_data
 
 
 def run_synth_pipeline(
@@ -51,8 +28,10 @@ def run_synth_pipeline(
     Can be used as an example for how to run a synthesis pipeline. Customize to own needs.
     """
     # check if random state is consistent for all classes
-    check.check_consistent_random_state(
-        classes=[generator, *generalizers], random_state=random_state
+    check_param_consistency(
+        classes=[generator, *generalizers],
+        parameter_name="random_state",
+        parameter_value=random_state,
     )
 
     # split into training and testing data to allow for evaluation with unseen data
@@ -63,7 +42,7 @@ def run_synth_pipeline(
         random_state=random_state,
     )
 
-    # process real data
+    # processing real data
     if preprocess_func is not None:
         data_train = preprocess_func(data_train)
 
@@ -76,7 +55,7 @@ def run_synth_pipeline(
     else:
         data_train_input = data_train.copy()
 
-    # use number of records of real data prior to splitting
+    # use number of records of real data prior to splitting train/holdout
     n_records = n_records if n_records is not None else data_real.shape[0]
 
     # generate synthetic data

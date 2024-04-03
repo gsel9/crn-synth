@@ -1,12 +1,10 @@
 """Generalization Mechanism"""
-from typing import Iterable, List, Union
 
 import numpy as np
-import pandas as pd
 from scipy.stats import truncnorm
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from crnsynth.process.dp_stats import dp_mean, dp_std
+from crnsynth.statistics.dp_stats import dp_mean, dp_std
 
 
 class BaseGeneralizationMech(TransformerMixin, BaseEstimator):
@@ -185,9 +183,8 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
         # only transform non-nan values
         return data.loc[~data[self.column].isna(), self.column]
 
-    @staticmethod
-    def _get_bin_edges(bins, bounds):
-        """Get the bin edges based on bounds or check if provided bins are monotonically increasing."""
+    def _get_bin_edges(self, bins, bounds):
+        """Get the bin edges based on bounds and number of bins."""
         # get equal-width bins when bins is integer
         if isinstance(bins, int):
             # take uniform bins
@@ -195,10 +192,12 @@ class NumericGeneralizationMech(BaseGeneralizationMech):
 
             # round to 2 decimals
             bin_edges = np.round(bin_edges, 2)
-
-        # check if provided bins are monotonically increasing
         else:
-            bin_edges = np.asarray(bins)
-            if np.any(bin_edges[:-1] > bin_edges[1:]):
-                raise ValueError("`bins` must increase monotonically, when an array")
+            self._check_bin_edges(bins)
         return bin_edges
+
+    def _check_bin_edges(self, bins):
+        """Check the bin edges."""
+        bin_edges = np.asarray(bins)
+        if np.any(bin_edges[:-1] > bin_edges[1:]):
+            raise ValueError("`bins` must increase monotonically, when an array")
