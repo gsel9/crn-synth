@@ -28,8 +28,8 @@ class DistanceClosestRecord(BaseMetric):
     The lower the distance, the more similar the synthetic data is to the real data.
 
     Privacy risk: DCR close to 0, where synthetic data points are close to real data points.
-    Compare to holdout to determine an acceptable level. DCR of synthetic data should be equal or higher than the DCR of the
-    holdout test set to the training data.
+    Compare to holdout dataset to determine an acceptable level. DCR of synthetic data should be equal or higher than
+    the DCR of the holdout dataset to the training data.
     """
 
     def __init__(
@@ -67,7 +67,7 @@ class DistanceClosestRecord(BaseMetric):
         self,
         data_train: pd.DataFrame,
         data_synth: pd.DataFrame,
-        data_holdout: pd.DataFrame,
+        data_holdout: Union[pd.DataFrame, None] = None,
     ) -> Dict:
         if data_holdout is None:
             raise ValueError("Holdout data is required for computing this metric.")

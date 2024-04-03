@@ -87,7 +87,7 @@ class NearestNeighborDistanceRatio(BaseMetric):
         self,
         data_train: pd.DataFrame,
         data_synth: pd.DataFrame,
-        data_holdout: pd.DataFrame,
+        data_holdout: Union[pd.DataFrame, None] = None,
     ) -> Dict:
         if data_holdout is None:
             raise ValueError("Holdout data is required for computing this metric.")

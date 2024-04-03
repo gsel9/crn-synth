@@ -17,7 +17,7 @@ def compute_distance_nn(
     distance_metric="gower",
 ):
     """Compute distance to closest real record for each synthetic record.
-    Normalize using holdout holdout data."""
+    Normalize using holdout data."""
 
     def gower_distance(x, y, categorical_columns, n_neighbors):
         # set numeric columns to float - needed for gower distance

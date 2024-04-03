@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from sklearn.preprocessing import OrdinalEncoder
 
 from crnsynth.processing import encoding
 
@@ -37,21 +38,23 @@ def test_get_default_encoders(data):
 
 
 def test_encode_data(data):
-    encoders = encoding.get_default_encoder(
-        data, categorical_columns=None, numerical_columns=None
-    )
-    data_enc, encoders = encoding.encode_data(data, encoders)
+    encoder = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+    data_enc, encoder = encoding.encode_data(data, encoder, refit=False)
 
-    # check if encoded data has correct number of columns
-    assert data_enc.shape[1] == 7, "Encoded data has incorrect number of columns"
+    # check is fitted
+    assert encoding.check_is_fitted(encoder) is None, "Encoder is not fitted"
 
-    # check if encoded data has correct column names
-    assert data_enc.columns.tolist() == [
-        "cat__binary_cat_column_b",
-        "cat__cat_column_a",
-        "cat__cat_column_b",
-        "cat__cat_column_c",
-        "num__binary_int_column",
-        "num__float_column",
-        "num__int_column",
-    ], "Encoded data has incorrect column names"
+    # alter some values in data
+    data_new = data.copy()
+    data_new.loc[0, "binary_cat_column"] = "c"
+    data_new.loc[1, "cat_column"] = "d"
+
+    # transform using fitted encoder
+    data_enc_new, _ = encoding.encode_data(data_new, encoder)
+    assert (
+        data_enc_new.loc[0, "binary_cat_column"] == -1
+    ), "Unknown value is not encoded"
+    assert data_enc_new.loc[1, "cat_column"] == -1, "Unknown value is not encoded"
+
+    # check if the encoded data is different
+    assert not data_enc.equals(data_enc_new), "Encoded data is not different"
