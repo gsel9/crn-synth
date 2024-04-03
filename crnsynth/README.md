@@ -26,14 +26,17 @@ Moreover, we add our own custom generators and metrics alongside these libraries
 
 ## Library structure
 This library is structured in the following manner:
-- checks/ - functions to check the validity of data, settings and models
+- benchmark/ - benchmark the performance of generators and synthetic datasets
+- checks/ - check the validity of data, settings and models
 - metrics/ - metrics for evaluating the synthetic data with respect to the original data
   - performance/ - comparing the performance of models (e.g. ML, survival analysis, etc)
   - privacy/ - evaluating privacy risk of the synthetic data
   - similarity/ - computing the statistical similarity of the synthetic data 
 - generators/ - custom generators that can be used alongside third-party generators
-- process/ - functions to process the original and synthetic data
-- visuals/ - functions to visualize the original and synthetic data
+- process/ - process the original and synthetic data for synthesis and metrics
+- stats/ - compute statistics on the original and synthetic data
+- synthesization/ - generate synthetic data using generators and processing pipelines
+- visuals/ - visualize the distributions in the original and synthetic data
 
 All code in this library is dataset-agnostic. When applying it to a particular dataset and use case, you inherit all functionality from this library to define your own pipeline and run a set of experiments. 
 An example on the adult dataset is provided in the examples/ folder
