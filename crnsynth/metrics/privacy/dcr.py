@@ -34,6 +34,7 @@ class DistanceClosestRecord(BaseMetric):
 
     def __init__(
         self,
+        encoder="ordinal",
         quantile: float = 0.5,
         metric: str = "gower",
         categorical_columns: Union[List[str], None] = None,
@@ -41,12 +42,11 @@ class DistanceClosestRecord(BaseMetric):
     ) -> None:
         """
         Args:
-            quantile (float): Quantile of distances to closest real record to take.
+            quantile (float): Quantile of distances to the closest real record to take.
             metric (str): Distance metric to use.
             categorical_columns (List or None): List of categorical columns.
         """
-        super().__init__(**kwargs)
-
+        super().__init__(encoder=encoder, **kwargs)
         self.quantile = quantile
         self.metric = metric
         self.categorical_columns = categorical_columns
@@ -72,6 +72,11 @@ class DistanceClosestRecord(BaseMetric):
         if data_holdout is None:
             raise ValueError("Holdout data is required for computing this metric.")
 
+        # encode data using encoder
+        data_train, data_synth, data_holdout = self.encode(
+            data_train, data_synth, data_holdout, return_df=True
+        )
+
         # compute distances to closest real record
         distances_holdout, distances_synth = compute_closest_distances(
             data_train=data_train,
@@ -81,7 +86,7 @@ class DistanceClosestRecord(BaseMetric):
             distance_metric=self.metric,
         )
 
-        # take the quantile of distances to closest real record
+        # take the quantile of distances to the closest real record
         dcr_holdout = np.quantile(distances_holdout[:, 0], self.quantile)
         dcr_synth = np.quantile(distances_synth[:, 0], self.quantile)
         return {"holdout": dcr_holdout, "synth": dcr_synth}

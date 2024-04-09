@@ -19,18 +19,18 @@ def data():
     )
 
 
-def test_get_default_encoders(data):
-    encoders = encoding.get_default_encoder(
-        data, categorical_columns=None, numerical_columns=None
-    )
-    assert len(encoders.transformers) == 2
+def test_default_encoder(data):
+    encoder = encoding.DefaultEncoder(categorical_columns=None, numerical_columns=None)
+    data_enc, encoder = encoding.encode_data(data, encoder, refit=False)
+
+    assert len(encoder.transformers) == 2
 
     # check if correct column categories are inferred
-    assert encoders.transformers[0][2] == [
+    assert encoder.transformers[0][2] == [
         "binary_cat_column",
         "cat_column",
     ], "Categorical columns are not inferred correctly"
-    assert encoders.transformers[1][2] == [
+    assert encoder.transformers[1][2] == [
         "binary_int_column",
         "float_column",
         "int_column",

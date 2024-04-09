@@ -16,7 +16,7 @@ def compute_distance_nn(
     n_neighbors,
     distance_metric="gower",
 ):
-    """Compute distance to closest real record for each synthetic record.
+    """Compute distance to the closest real record for each synthetic record.
     Normalize using holdout data."""
 
     def gower_distance(x, y, categorical_columns, n_neighbors):
@@ -48,7 +48,7 @@ def compute_distance_nn(
         return dist_x
 
     def nn_distance(data_train, data_synth, data_holdout, metric, n_neighbors):
-        # fit nearest neighbors to training distance)
+        # fit nearest neighbors to training distance
         knn = NearestNeighbors(
             n_neighbors=n_neighbors, algorithm="brute", metric=metric, n_jobs=-1
         )

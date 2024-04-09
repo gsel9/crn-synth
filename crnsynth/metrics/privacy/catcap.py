@@ -19,11 +19,12 @@ class CategoricalCAPScore(BaseMetric):
     def __init__(
         self,
         categorical_columns=None,
-        frac_sensitive=None,
+        frac_sensitive=0.5,
+        encoder="ordinal",
         random_state=None,
         **kwargs: Any
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(encoder=encoder, **kwargs)
         self.categorical_columns = categorical_columns
         self.frac_sensitive = frac_sensitive
         self.random_state = random_state
@@ -44,6 +45,10 @@ class CategoricalCAPScore(BaseMetric):
     ) -> Dict:
         self._check_params()
 
+        # subset data to categorical columns
+        data_train = data_train[self.categorical_columns].copy()
+        data_synth = data_synth[self.categorical_columns].copy()
+
         # select sensitive and known columns
         n_sensitive = int(len(self.categorical_columns) * self.frac_sensitive)
         sensitive_columns = list(
@@ -53,19 +58,16 @@ class CategoricalCAPScore(BaseMetric):
             col for col in self.categorical_columns if col not in sensitive_columns
         ]
 
-        # encode categorical columns as integers and retain dataframe for CAP score
-        ordinal_enc = OrdinalEncoder(handle_unknown="error")
-        data_train_enc, ordinal_enc = encoding.encode_data(
-            data_train[self.categorical_columns], encoder=ordinal_enc
-        )
-        data_synth_enc, _ = encoding.encode_data(
-            data_synth[self.categorical_columns], encoder=ordinal_enc
-        )
+        # encode data using encoder
+        if self.encoder is not None:
+            data_train, data_synth, _ = self.encode(
+                data_train, data_synth, data_holdout, return_df=True
+            )
 
         # compute CAP score
         score = CategoricalCAP.compute(
-            real_data=data_train_enc,
-            synthetic_data=data_synth_enc,
+            real_data=data_train,
+            synthetic_data=data_synth,
             key_fields=known_columns,
             sensitive_fields=sensitive_columns,
         )

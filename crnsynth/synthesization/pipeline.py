@@ -6,7 +6,7 @@ from crnsynth.checks.params import check_param_consistency
 from crnsynth.generators.base_generator import BaseGenerator
 from crnsynth.processing import postprocessing, preprocessing, utils
 from crnsynth.processing.generalization import BaseGeneralizationMech
-from crnsynth.synthesization.generation import generate_synth_data
+from crnsynth.synthesization.synthesization import generate_synth_data
 
 
 def run_synth_pipeline(

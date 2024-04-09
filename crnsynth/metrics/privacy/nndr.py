@@ -12,7 +12,7 @@ def compute_ratio_distances(
     data_synth,
     data_holdout,
     categorical_columns,
-    n_neighbors=5,
+    n_neighbors,
     distance_metric="gower",
 ):
     distances_test, distances_synth = compute_distance_nn(
@@ -51,9 +51,10 @@ class NearestNeighborDistanceRatio(BaseMetric):
 
     def __init__(
         self,
+        encoder="ordinal",
         quantile: float = 0.5,
         distance_metric: str = "gower",
-        n_neighbors: int = 5,
+        n_neighbors: int = 2,
         categorical_columns: Union[List[str], None] = None,
         **kwargs: Any,
     ) -> None:
@@ -64,8 +65,7 @@ class NearestNeighborDistanceRatio(BaseMetric):
             n_neighbors (int): Number of nearest neighbors to use for computing NNDR.
             categorical_columns (List or None): List of categorical columns.
         """
-        super().__init__(**kwargs)
-
+        super().__init__(encoder=encoder, **kwargs)
         self.quantile = quantile
         self.metric = distance_metric
         self.n_neighbors = n_neighbors
@@ -92,6 +92,11 @@ class NearestNeighborDistanceRatio(BaseMetric):
         if data_holdout is None:
             raise ValueError("Holdout data is required for computing this metric.")
 
+        # encode data using encoder
+        data_train, data_synth, data_holdout = self.encode(
+            data_train, data_synth, data_holdout, return_df=True
+        )
+
         # compute distances to closest real record
         distances_holdout, distances_synth = compute_ratio_distances(
             data_train=data_train,
@@ -102,7 +107,7 @@ class NearestNeighborDistanceRatio(BaseMetric):
             distance_metric=self.metric,
         )
 
-        # take the quantile of distances to closest real record
+        # take the quantile of distances to the closest real record
         nndr_holdout = np.quantile(distances_holdout, self.quantile)
         nndr_synth = np.quantile(distances_synth, self.quantile)
         return {"holdout": nndr_holdout, "synth": nndr_synth}

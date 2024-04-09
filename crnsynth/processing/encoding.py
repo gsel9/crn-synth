@@ -9,37 +9,85 @@ from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from sklearn.utils.validation import check_is_fitted
 
 
-def get_default_encoder(
-    data: pd.DataFrame,
-    categorical_columns: Union[Iterable, None] = None,
-    numerical_columns: Union[Iterable, None] = None,
-):
+class DefaultEncoder(ColumnTransformer):
     """Default encoder for preparing data for synthesis or metrics"""
 
-    # derive column types from data if not specified
-    if categorical_columns is None:
-        categorical_columns = data.select_dtypes(
-            include=["object", "category"]
-        ).columns.tolist()
-    if numerical_columns is None:
-        numerical_columns = data.select_dtypes(
-            include=["float64", "int64"]
-        ).columns.tolist()
+    def __init__(
+        self,
+        categorical_columns: Union[Iterable, None] = None,
+        numerical_columns: Union[Iterable, None] = None,
+    ):
+        """Initialize the encoder"""
+        super().__init__(transformers=[], remainder="passthrough")
 
-    encoder = ColumnTransformer(
-        [
-            ("cat", OneHotEncoder(drop="if_binary"), categorical_columns),
-            ("num", StandardScaler(), numerical_columns),
+        self.categorical_columns = categorical_columns
+        self.numerical_columns = numerical_columns
+        self.encoder = None
+
+    def fit(self, data: pd.DataFrame, **kwargs):
+        # derive column types from data if not specified
+        if self.categorical_columns is None:
+            self.categorical_columns = data.select_dtypes(
+                include=["object", "category"]
+            ).columns.tolist()
+        if self.numerical_columns is None:
+            self.numerical_columns = data.select_dtypes(
+                include=["float64", "int64"]
+            ).columns.tolist()
+
+        # assign transformers to ColumnTransformer
+        self.transformers = [
+            ("cat", OneHotEncoder(drop="if_binary"), self.categorical_columns),
+            ("num", StandardScaler(), self.numerical_columns),
         ]
+        super().fit(data)
+        return self
+
+    def transform(self, data: pd.DataFrame):
+        return super().transform(data)
+
+
+def get_encoder(encoder: str):
+    """Get an encoder by name"""
+    encoders = {
+        "onehot": OneHotEncoder(drop="if_binary"),
+        "ordinal": OrdinalEncoder(
+            handle_unknown="use_encoded_value", unknown_value=np.nan
+        ),
+        "default": DefaultEncoder(),
+    }
+
+    if encoder not in encoders:
+        raise ValueError(f"Encoder {encoder} not found")
+    return encoders[encoder]
+
+
+def convert_encoded_data_to_dataframe(data_enc, encoder, column_names=None):
+    """Convert encoded data back to a dataframe"""
+    # convert the encoded data to a DataFrame
+    df_enc = pd.DataFrame(
+        data_enc,
+        columns=encoder.get_feature_names_out(column_names),
     )
+    return df_enc
 
-    return encoder
 
-
-def encode_data(data, encoder, refit: bool = False):
+def encode_data(data, encoder, refit: bool = False, return_df: bool = True):
     """Encode data using a ColumnTransformer"""
+    assert (
+        encoder is not None
+    ), "Encoder is required, specify encoder class or name (str)"
+    assert isinstance(data, pd.DataFrame), "Data must be a DataFrame"
+
+    # get encoder if it is a string
+    if isinstance(encoder, str):
+        encoder = get_encoder(encoder)
+
     # make a copy of the data to prevent modifying the original
     data = data.copy()
+
+    # ensure data columns are of type string to avoid type errors
+    data.columns = data.columns.astype(str)
 
     # fit the encoder to the data if refit is True or if it is not fitted yet
     if refit:
@@ -53,18 +101,9 @@ def encode_data(data, encoder, refit: bool = False):
     # transform the data
     data_enc = encoder.transform(data)
 
-    # convert the transformed data to a DataFrame
-    data_enc = convert_encoded_data_to_dataframe(
-        data_enc, encoder, column_names=data.columns
-    )
+    # convert the transformed data back to a DataFrame
+    if return_df:
+        data_enc = convert_encoded_data_to_dataframe(
+            data_enc, encoder, column_names=data.columns
+        )
     return data_enc, encoder
-
-
-def convert_encoded_data_to_dataframe(data_enc, encoder, column_names=None):
-    """Convert encoded data back to a dataframe"""
-    # convert the encoded data to a DataFrame
-    df_enc = pd.DataFrame(
-        data_enc,
-        columns=encoder.get_feature_names_out(column_names),
-    )
-    return df_enc
