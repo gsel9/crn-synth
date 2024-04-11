@@ -1,8 +1,7 @@
 import pandas as pd
 import pytest
 
-from crnsynth.benchmark.benchmark import SyntheticDataBenchmark
-from crnsynth.checks.similarity import almost_equal_dicts
+from crnsynth.benchmark.review import SyntheticDataReview
 from crnsynth.metrics.privacy.dcr import DistanceClosestRecord
 from crnsynth.metrics.privacy.nndr import NearestNeighborDistanceRatio
 
@@ -39,9 +38,7 @@ EXPECTED_RESULTS_METRICS_LIST = {
 EXPECTED_RESULTS_METRICS_DICT = {"privacy": EXPECTED_RESULTS_METRICS_LIST}
 
 
-def test_benchmark_compute_metrics_list_sequential(
-    real_data, synthetic_data, holdout_data
-):
+def test_review_metrics_list_sequential(real_data, synthetic_data, holdout_data):
     """Test compute method with list of metrics and sequential computation"""
     # metrics as list
     metrics = [DistanceClosestRecord(), NearestNeighborDistanceRatio()]
@@ -56,7 +53,7 @@ def test_benchmark_compute_metrics_list_sequential(
     n_jobs = 1
 
     # run benchmark
-    benchmark = SyntheticDataBenchmark(
+    benchmark = SyntheticDataReview(
         metrics=metrics, encoder="ordinal", n_jobs=n_jobs, metric_kwargs=metric_kwargs
     )
     results = benchmark.compute(real_data, synthetic_data, holdout_data)
@@ -77,9 +74,7 @@ def test_benchmark_compute_metrics_list_sequential(
     ), "Results should match expected results"
 
 
-def test_benchmark_compute_metrics_dict_sequential(
-    real_data, synthetic_data, holdout_data
-):
+def test_review_metrics_dict_sequential(real_data, synthetic_data, holdout_data):
     """Test compute method with dictionary of metrics and sequential computation"""
     # metrics as dictionary
     metrics = {"privacy": [DistanceClosestRecord(), NearestNeighborDistanceRatio()]}
@@ -94,7 +89,7 @@ def test_benchmark_compute_metrics_dict_sequential(
     n_jobs = 1
 
     # run benchmark
-    benchmark = SyntheticDataBenchmark(
+    benchmark = SyntheticDataReview(
         metrics=metrics, encoder="ordinal", n_jobs=n_jobs, metric_kwargs=metric_kwargs
     )
     results = benchmark.compute(real_data, synthetic_data, holdout_data)
@@ -116,9 +111,7 @@ def test_benchmark_compute_metrics_dict_sequential(
     ), "Results should match expected results"
 
 
-def test_benchmark_compute_metrics_list_parallel(
-    real_data, synthetic_data, holdout_data
-):
+def test_review_metrics_list_parallel(real_data, synthetic_data, holdout_data):
     """Test compute method with list of metrics and parallel computation"""
     # metrics as list
     metrics = [DistanceClosestRecord(), NearestNeighborDistanceRatio()]
@@ -133,7 +126,7 @@ def test_benchmark_compute_metrics_list_parallel(
     n_jobs = -1
 
     # run benchmark
-    benchmark = SyntheticDataBenchmark(
+    benchmark = SyntheticDataReview(
         metrics=metrics, encoder="ordinal", n_jobs=n_jobs, metric_kwargs=metric_kwargs
     )
     results = benchmark.compute(real_data, synthetic_data, holdout_data)
@@ -154,9 +147,7 @@ def test_benchmark_compute_metrics_list_parallel(
     ), "Results should match expected results"
 
 
-def test_benchmark_compute_metrics_dict_parallel(
-    real_data, synthetic_data, holdout_data
-):
+def test_review_metrics_dict_parallel(real_data, synthetic_data, holdout_data):
     """Test compute method with dictionary of metrics and parallel computation"""
     # metrics as dictionary
     metrics = {"privacy": [DistanceClosestRecord(), NearestNeighborDistanceRatio()]}
@@ -171,7 +162,7 @@ def test_benchmark_compute_metrics_dict_parallel(
     n_jobs = -1
 
     # run benchmark
-    benchmark = SyntheticDataBenchmark(
+    benchmark = SyntheticDataReview(
         metrics=metrics, encoder="ordinal", n_jobs=n_jobs, metric_kwargs=metric_kwargs
     )
     results = benchmark.compute(real_data, synthetic_data, holdout_data)

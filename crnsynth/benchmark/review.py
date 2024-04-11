@@ -12,7 +12,7 @@ from crnsynth.metrics.base_metric import BaseMetric
 from crnsynth.processing.encoding import encode_data
 
 
-class SyntheticDataBenchmark:
+class SyntheticDataReview:
     """Run a suite of metrics on a synthetic dataset and benchmark its performance."""
 
     def __init__(
