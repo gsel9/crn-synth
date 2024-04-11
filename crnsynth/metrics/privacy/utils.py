@@ -19,6 +19,11 @@ def compute_distance_nn(
     """Compute distance to the closest real record for each synthetic record.
     Normalize using holdout data."""
 
+    # check n_neighbors does not exceed number of records
+    assert (
+        n_neighbors < data_train.shape[0]
+    ), "n_neighbors must be less than number of records in training data"
+
     def gower_distance(x, y, categorical_columns, n_neighbors):
         # set numeric columns to float - needed for gower distance
         if categorical_columns is not None:

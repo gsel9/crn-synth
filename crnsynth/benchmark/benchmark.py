@@ -1,17 +1,19 @@
-"""Class to run a suite of metrics on a synthetic dataset and benchmark its performance."""
+"""Run a suite of metrics on a synthetic dataset and benchmark its performance."""
 import copy
+import random
 from typing import Any, Dict, List, Union
 
+import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
 
-from crnsynth.checks.params import check_param_consistency, set_param
+from crnsynth.checks.params import set_class_param
 from crnsynth.metrics.base_metric import BaseMetric
 from crnsynth.processing.encoding import encode_data
 
 
 class SyntheticDataBenchmark:
-    """Class to run a suite of metrics on a synthetic dataset and benchmark its performance."""
+    """Run a suite of metrics on a synthetic dataset and benchmark its performance."""
 
     def __init__(
         self,
@@ -19,13 +21,15 @@ class SyntheticDataBenchmark:
         metric_kwargs: Dict[str, Any] = None,
         encoder=None,
         n_jobs: int = 1,
+        random_state: int = None,
         verbose: int = 1,
     ):
         """
         Args:
             metrics List[BaseMetric], Dict[str, BaseMetric]: List or Dict of metrics to run.
             metric_kwargs (Dict[str, Any], optional): Dictionary of keyword arguments for the metrics. Defaults to None.
-            encoder (Any, optional): Use one type of encoding for all metrics. If None, use encoding method specified in each metric. Defaults to None.
+            encoder (Any, optional): Use one type of encoding for all metrics. If None, use encoding method specified in
+                                     each metric. Defaults to None.
             n_jobs (int, optional): Number of jobs to run in parallel. Defaults to 1.
             verbose (int, optional): Verbosity level. Defaults to 1.
         """
@@ -35,7 +39,7 @@ class SyntheticDataBenchmark:
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-        # results of the metrics
+        # results of the metrics after running .compute()
         self.scores_ = {}
 
     def compute(
@@ -60,8 +64,8 @@ class SyntheticDataBenchmark:
                 data_train, data_synth, data_holdout
             )
 
-            # update parameters for all metrics
-            self._set_metric_kwargs()
+        # update parameters for all metrics
+        self._set_metric_kwargs()
 
         if self.n_jobs == 1:
             self._compute_sequential(data_train, data_synth, data_holdout)
@@ -70,7 +74,7 @@ class SyntheticDataBenchmark:
 
         return self.scores_
 
-    def _encode(self, data_train, data_synth, data_holdout):
+    def _encode(self, data_train, data_synth, data_holdout=None):
         """Use one encoding scheme for all metrics, only apply once to save computation time"""
         # fit and transform training data
         data_train, self.encoder = encode_data(
@@ -83,9 +87,10 @@ class SyntheticDataBenchmark:
         )
 
         # transform holdout data using the encoder fitted on the training data
-        data_holdout, _ = encode_data(
-            data_holdout, encoder=self.encoder, refit=False, return_df=True
-        )
+        if data_holdout is not None:
+            data_holdout, _ = encode_data(
+                data_holdout, encoder=self.encoder, refit=False, return_df=True
+            )
 
         # add encoder = None to metric_kwargs to avoid redundant encoding in each metric
         if self.metric_kwargs is None:
@@ -133,36 +138,49 @@ class SyntheticDataBenchmark:
             }
         # compute dictionary of metrics where metrics are separated by category
         elif isinstance(self.metrics, dict):
-            self.scores_ = {
-                metric_category: result
-                for metric_category, result in zip(
-                    self.metrics.keys(),
-                    Parallel(n_jobs=self.n_jobs)(
-                        delayed(metric.compute)(data_train, data_synth, data_holdout)
-                        for metric in self.metrics.values()
-                    ),
-                )
-            }
+            # Flatten the dictionary into a list and keep track of categories
+            metrics_list = [
+                (metric_category, metric)
+                for metric_category, metric_list in self.metrics.items()
+                for metric in metric_list
+            ]
+
+            # Compute all metrics in parallel
+            results = Parallel(n_jobs=self.n_jobs)(
+                delayed(metric.compute)(data_train, data_synth, data_holdout)
+                for _, metric in metrics_list
+            )
+
+            # Reconstruct the dictionary structure in the results
+            self.scores_ = {}
+            for (metric_category, metric), result in zip(metrics_list, results):
+                if metric_category not in self.scores_:
+                    self.scores_[metric_category] = {}
+                self.scores_[metric_category][metric.name()] = result
         else:
             raise ValueError("metrics must be a list or dictionary of metrics.")
 
     def _set_metric_kwargs(self):
         """Set metric parameter value for all metrics."""
-        # create a deep copy of the metrics to avoid modifying the original metrics
-        self.metrics = copy.deepcopy(self.metrics)
-
+        # nothing to set
         if self.metric_kwargs is None:
             return
+
+        # create a deep copy of the metrics to avoid modifying the reference to the original metric parameters
+        self.metrics = copy.deepcopy(self.metrics)
 
         for param_name, param_value in self.metric_kwargs.items():
             # set parameter value in metric class has the parameter
             if isinstance(self.metrics, list):
                 for metric in self.metrics:
-                    # create cop
-                    # set parameter value in metric class has the parameter
-                    set_param(metric, param_name, param_value, check_has_param=True)
+                    # set parameter value in metric class if it has the parameter
+                    set_class_param(
+                        metric, param_name, param_value, check_has_param=True
+                    )
             elif isinstance(self.metrics, dict):
                 for metric_category, metric_list in self.metrics.items():
                     for metric in metric_list:
-                        # set parameter value in metric class has the parameter
-                        set_param(metric, param_name, param_value, check_has_param=True)
+                        # set parameter value in metric class if it has the parameter
+                        set_class_param(
+                            metric, param_name, param_value, check_has_param=True
+                        )

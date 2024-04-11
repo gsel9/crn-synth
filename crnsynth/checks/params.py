@@ -5,7 +5,7 @@ from typing import Any, Union
 warnings.simplefilter(action="default")
 
 
-def set_param(
+def set_class_param(
     cls, parameter_name: str, parameter_value: Any, check_has_param: bool = True
 ):
     """Set parameter value in classes if it has the parameter."""
@@ -38,5 +38,5 @@ def check_param_consistency(
                         f"Parameter {parameter_name} is inconsistent in {cls} with value {getattr(cls, parameter_name)}. "
                         f"Setting to {parameter_value}"
                     )
-                    set_param(cls, parameter_name, parameter_value)
+                    set_class_param(cls, parameter_name, parameter_value)
     return classes
