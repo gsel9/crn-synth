@@ -56,10 +56,6 @@ class DistanceClosestRecord(BaseMetric):
         return "privacy"
 
     @staticmethod
-    def name() -> str:
-        return "distance_closest_record"
-
-    @staticmethod
     def direction() -> str:
         return "maximize"
 

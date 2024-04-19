@@ -112,8 +112,8 @@ class SyntheticDataReview:
         if isinstance(self.metrics, list):
             for metric in self.metrics:
                 if self.verbose:
-                    print(f"Running metric {metric.name()}")
-                self.scores_[metric.name()] = metric.compute(
+                    print(f"Running metric {metric.name}")
+                self.scores_[metric.name] = metric.compute(
                     data_train, data_synth, data_holdout
                 )
         # compute dictionary of metrics where metrics are separated by category
@@ -122,8 +122,8 @@ class SyntheticDataReview:
                 self.scores_[metric_category] = {}
                 for metric in metric_list:
                     if self.verbose:
-                        print(f"Running metric {metric.name()}")
-                    self.scores_[metric_category][metric.name()] = metric.compute(
+                        print(f"Running metric {metric.name}")
+                    self.scores_[metric_category][metric.name] = metric.compute(
                         data_train, data_synth, data_holdout
                     )
         else:
@@ -134,7 +134,7 @@ class SyntheticDataReview:
         # compute list of metrics
         if isinstance(self.metrics, list):
             self.scores_ = {
-                metric.name(): result
+                metric.name: result
                 for metric, result in zip(
                     self.metrics,
                     Parallel(n_jobs=self.n_jobs)(
@@ -163,7 +163,7 @@ class SyntheticDataReview:
             for (metric_category, metric), result in zip(metrics_list, results):
                 if metric_category not in self.scores_:
                     self.scores_[metric_category] = {}
-                self.scores_[metric_category][metric.name()] = result
+                self.scores_[metric_category][metric.name] = result
         else:
             raise ValueError("metrics must be a list or dictionary of metrics.")
 

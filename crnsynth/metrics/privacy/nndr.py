@@ -76,10 +76,6 @@ class NearestNeighborDistanceRatio(BaseMetric):
         return "privacy"
 
     @staticmethod
-    def name() -> str:
-        return "nearest_neighbor_distance_ratio"
-
-    @staticmethod
     def direction() -> str:
         return "maximize"
 

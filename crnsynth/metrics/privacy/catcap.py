@@ -30,10 +30,6 @@ class CategoricalCAPScore(BaseMetric):
         self.random_state = random_state
 
     @staticmethod
-    def name() -> str:
-        return "cap_categorical_score"
-
-    @staticmethod
     def direction() -> str:
         return "maximize"
 

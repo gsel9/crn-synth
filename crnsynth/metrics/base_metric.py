@@ -13,10 +13,9 @@ class BaseMetric:
         """Initialize the metric."""
         self.encoder = encoder
 
-    @staticmethod
+    @property
     def name(self) -> str:
-        """Return the name of the metric."""
-        raise NotImplementedError("name() method not implemented")
+        return self.__class__.__name__
 
     @staticmethod
     def type() -> str:
