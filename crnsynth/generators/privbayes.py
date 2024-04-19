@@ -1,4 +1,5 @@
-from typing import Any, List
+from pathlib import Path
+from typing import Any, List, Union
 
 import pandas as pd
 
@@ -8,7 +9,7 @@ from synthesis.synthesizers.privbayes import PrivBayes as PrivBayesDK
 from crnsynth.generators.base_generator import BaseGenerator
 
 
-class PrivBayes(PrivBayesDK, BaseGenerator):
+class PrivBayes(BaseGenerator):
     """PrivBayes implementation from synthesis.
 
     PrivBayes implementation of synthetic-data-generation library (DK). Other implementations can be found in synthcity
@@ -20,12 +21,28 @@ class PrivBayes(PrivBayesDK, BaseGenerator):
     """
 
     def __init__(self, epsilon, **kwargs: Any) -> None:
-        super().__init__(epsilon=epsilon)
+        super().__init__()
+        self.epsilon = epsilon
+        self.model = PrivBayesDK(epsilon=epsilon)
 
     def fit(self, data_real) -> None:
         """Fit the model to the real data."""
-        super().fit(data_real)
+        self.model.fit(data_real)
 
     def generate(self, n_records: int) -> pd.DataFrame:
         """Generate records based on the trained model."""
-        return super().sample(n_records)
+        return self.model.sample(n_records)
+
+    def save(self, path: Union[str, Path]) -> None:
+        """Save the model to a file.
+
+        PrivBayes has its own saving method, so we use that to avoid errors.
+        """
+        self.model.save(path)
+
+    def load(path: Union[str, Path]) -> Any:
+        """Load the model from a file.
+
+        PrivBayes has its own loading method, so we use that to avoid errors.
+        """
+        return PrivBayesDK.load(path)
