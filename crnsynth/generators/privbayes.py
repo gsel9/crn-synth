@@ -11,8 +11,8 @@ from crnsynth.generators.base_generator import BaseGenerator
 class PrivBayes(PrivBayesDK, BaseGenerator):
     """PrivBayes implementation from synthesis.
 
-    PrivBayes implementation of synthetic-data-generation library (DK). Other implementations can be found in synthcity or DataSynthesizer. However, these only concern the base
-    version of the original PrivBayes paper.
+    PrivBayes implementation of synthetic-data-generation library (DK). Other implementations can be found in synthcity
+    or DataSynthesizer. However, these only concern the base version of the original PrivBayes paper.
 
     This version also implemented the following improvements mentioned in the extended paper:
     - R score function instead of Mutual Information - which has a lower sensitivity and thus requires less noise to compute.
@@ -20,8 +20,7 @@ class PrivBayes(PrivBayesDK, BaseGenerator):
     """
 
     def __init__(self, epsilon, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self.epsilon = epsilon
+        super().__init__(epsilon=epsilon)
 
     def fit(self, data_real) -> None:
         """Fit the model to the real data."""

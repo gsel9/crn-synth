@@ -1,9 +1,11 @@
 """Functions to run synthesis pipeline on real data."""
+from pathlib import Path
 from typing import Union
 
 import pandas as pd
 
 from crnsynth.generators.base_generator import BaseGenerator
+from crnsynth.serialization.paths import create_output_dir
 
 
 def generate_synth_data(

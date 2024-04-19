@@ -10,12 +10,11 @@ from crnsynth.processing.generalization import (
     BaseGeneralizationMech,
     NumericGeneralizationMech,
 )
+from crnsynth.serialization.paths import PATH_DATA, PATH_RESULTS
 
 # paths
-PATH_REPO = Path(os.path.dirname(os.path.realpath(__file__))).parents[1]
-PATH_DATA = PATH_REPO / "data"
-PATH_ADULT = PATH_DATA / "adult.csv"
-PATH_RESULTS = PATH_REPO / "results"
+PATH_ADULT = PATH_DATA["adult"]
+PATH_ADULT_RESULTS = PATH_RESULTS / "adult"
 
 # column ranges used for generalization
 AGE_BOUNDS = (17, 90)

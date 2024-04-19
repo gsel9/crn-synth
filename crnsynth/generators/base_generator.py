@@ -8,13 +8,7 @@ import pandas as pd
 
 
 class BaseGenerator:
-    def __init__(self, random_state: Union[int, None] = None):
-        self.random_state = random_state
-
-        # set global random seed for both numpy and random
-        if random_state is not None:
-            np.random.seed(random_state)
-            random.seed(random_state)
+    """Base class for synthetic data generators"""
 
     @property
     def name(self) -> str:
@@ -46,10 +40,10 @@ class BaseGenerator:
             return pickle.load(f)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.__dict__})"
+        return f"{self.__class__.__name__}"
 
     def __str__(self) -> str:
         return self.__repr__()
 
-    def __copy__(self):
-        return self.__class__(**self.__dict__)
+    # def __copy__(self):
+    #     return self.__class__(**self.__dict__)

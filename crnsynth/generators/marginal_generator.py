@@ -13,8 +13,7 @@ class MarginalGenerator(MarginalSynthesizer, BaseGenerator):
     """
 
     def __init__(self, epsilon: float, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self.epsilon = epsilon
+        super().__init__(epsilon=epsilon)
 
     def fit(self, data_real: pd.DataFrame) -> None:
         """Fit the model to the real data."""

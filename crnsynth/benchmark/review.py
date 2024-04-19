@@ -1,4 +1,4 @@
-"""Run a suite of metrics on a synthetic dataset and benchmark its performance."""
+"""Run a suite of metrics on a synthetic dataset and review its performance."""
 import copy
 import random
 from typing import Any, Dict, List, Union
@@ -10,10 +10,11 @@ from joblib import Parallel, delayed
 from crnsynth.checks.params import set_class_param
 from crnsynth.metrics.base_metric import BaseMetric
 from crnsynth.processing.encoding import encode_data
+from crnsynth.processing.utils import flatten_dict
 
 
 class SyntheticDataReview:
-    """Run a suite of metrics on a synthetic dataset and benchmark its performance."""
+    """Run a suite of metrics on a synthetic dataset and review its performance."""
 
     def __init__(
         self,
@@ -73,6 +74,12 @@ class SyntheticDataReview:
             self._compute_parallel(data_train, data_synth, data_holdout)
 
         return self.scores_
+
+    def score_as_dataframe(self, name: str):
+        """Convert scores to a DataFrame."""
+        scores_flat = flatten_dict(self.scores_)
+        df = pd.DataFrame(scores_flat, index=[name]).T
+        return df
 
     def _encode(self, data_train, data_synth, data_holdout=None):
         """Use one encoding scheme for all metrics, only apply once to save computation time"""
