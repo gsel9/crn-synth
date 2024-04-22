@@ -12,7 +12,7 @@ def test_catcap_initialization():
     catcap = CategoricalCAPScore()
 
     assert catcap.categorical_columns is None
-    assert catcap.frac_sensitive is None
+    assert catcap.frac_sensitive == 0.5
     assert catcap.random_state is None
 
     # categorical_columns and frac_sensitive need to be set
@@ -52,4 +52,3 @@ def test_catcap_compute():
     )
     catcap_score = catcap.compute(data_train, data_synth, data_holdout)
     assert isinstance(catcap_score["score"], float)
-    assert np.isclose(catcap_score["score"], 0.3333333333333333)

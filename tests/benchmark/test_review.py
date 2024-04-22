@@ -32,8 +32,8 @@ def holdout_data():
 EXPECTED_DCR = {"holdout": 0.0, "synth": 0.03472222429182798}
 EXPECTED_NNDR = {"holdout": 4e-08, "synth": 0.25}
 EXPECTED_RESULTS_METRICS_LIST = {
-    "distance_closest_record": EXPECTED_DCR,
-    "nearest_neighbor_distance_ratio": EXPECTED_NNDR,
+    "DistanceClosestRecord": EXPECTED_DCR,
+    "NearestNeighborDistanceRatio": EXPECTED_NNDR,
 }
 EXPECTED_RESULTS_METRICS_DICT = {"privacy": EXPECTED_RESULTS_METRICS_LIST}
 
@@ -58,15 +58,15 @@ def test_review_metrics_list_sequential(real_data, synthetic_data, holdout_data)
     )
     results = benchmark.compute(real_data, synthetic_data, holdout_data)
     assert isinstance(results, dict), "Results should be a dictionary"
-    assert "distance_closest_record" in results, "DCR should be in results"
-    assert "nearest_neighbor_distance_ratio" in results, "NNDR should be in results"
+    assert "DistanceClosestRecord" in results, "DCR should be in results"
+    assert "NearestNeighborDistanceRatio" in results, "NNDR should be in results"
 
     # check results
     assert isinstance(
-        results["distance_closest_record"], dict
+        results["DistanceClosestRecord"], dict
     ), "DCR results should be a dictionary"
     assert isinstance(
-        results["nearest_neighbor_distance_ratio"], dict
+        results["NearestNeighborDistanceRatio"], dict
     ), "NNDR results should be a dictionary"
 
     assert (
@@ -99,10 +99,10 @@ def test_review_metrics_dict_sequential(real_data, synthetic_data, holdout_data)
         results["privacy"], dict
     ), "Privacy results should be a dictionary"
     assert (
-        "distance_closest_record" in results["privacy"]
+        "DistanceClosestRecord" in results["privacy"]
     ), "DCR should be in privacy results"
     assert (
-        "nearest_neighbor_distance_ratio" in results["privacy"]
+        "NearestNeighborDistanceRatio" in results["privacy"]
     ), "NNDR should be in privacy results"
 
     # check results
@@ -131,15 +131,15 @@ def test_review_metrics_list_parallel(real_data, synthetic_data, holdout_data):
     )
     results = benchmark.compute(real_data, synthetic_data, holdout_data)
     assert isinstance(results, dict), "Results should be a dictionary"
-    assert "distance_closest_record" in results, "DCR should be in results"
-    assert "nearest_neighbor_distance_ratio" in results, "NNDR should be in results"
+    assert "DistanceClosestRecord" in results, "DCR should be in results"
+    assert "NearestNeighborDistanceRatio" in results, "NNDR should be in results"
 
     # check results
     assert isinstance(
-        results["distance_closest_record"], dict
+        results["DistanceClosestRecord"], dict
     ), "DCR results should be a dictionary"
     assert isinstance(
-        results["nearest_neighbor_distance_ratio"], dict
+        results["NearestNeighborDistanceRatio"], dict
     ), "NNDR results should be a dictionary"
 
     assert (
@@ -172,10 +172,10 @@ def test_review_metrics_dict_parallel(real_data, synthetic_data, holdout_data):
         results["privacy"], dict
     ), "Privacy results should be a dictionary"
     assert (
-        "distance_closest_record" in results["privacy"]
+        "DistanceClosestRecord" in results["privacy"]
     ), "DCR should be in privacy results"
     assert (
-        "nearest_neighbor_distance_ratio" in results["privacy"]
+        "NearestNeighborDistanceRatio" in results["privacy"]
     ), "NNDR should be in privacy results"
 
     # check results
