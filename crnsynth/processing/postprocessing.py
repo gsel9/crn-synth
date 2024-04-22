@@ -3,6 +3,7 @@
 from typing import List
 
 import pandas as pd
+from matplotlib.dates import num2date
 
 from crnsynth.processing.generalization import BaseGeneralizationMech
 
@@ -15,3 +16,8 @@ def reverse_generalization(
     for gen_mech in generalizers:
         data_synth_rev = gen_mech.inverse_transform(data_synth_rev)
     return data_synth_rev, generalizers
+
+
+def numeric_to_date(num, date_format="%Y-%m-%d"):
+    """Convert numeric date to date string"""
+    return num2date(num).strftime(date_format)

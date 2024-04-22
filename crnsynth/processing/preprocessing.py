@@ -1,8 +1,10 @@
 """Pre-processing functions for real data before synthesis"""
 
+from datetime import datetime
 from typing import List, Union
 
 import pandas as pd
+from matplotlib.dates import date2num
 from sklearn.model_selection import train_test_split
 
 from crnsynth.processing.generalization import BaseGeneralizationMech
@@ -39,3 +41,10 @@ def generalize_data(
     for gen_mech in generalizers:
         data_gen = gen_mech.fit_transform(data_gen)
     return data_gen, generalizers
+
+
+def date_to_numeric(dates, date_format="%Y-%m-%d"):
+    """Convert date string to numeric date"""
+    return date2num(
+        dates.apply(lambda row: datetime.strptime(row, date_format))
+    ).astype(int)
