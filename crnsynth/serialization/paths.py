@@ -1,4 +1,5 @@
 """Paths for package"""
+
 import os
 from pathlib import Path
 

@@ -1,4 +1,5 @@
 """Module for hypothesis testing of non-inferiority between two groups."""
+
 import typing
 
 import numpy as np

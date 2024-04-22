@@ -1,4 +1,5 @@
 """Pre-processing functions for real data before synthesis"""
+
 from typing import List, Union
 
 import pandas as pd

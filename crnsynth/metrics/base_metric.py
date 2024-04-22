@@ -1,4 +1,5 @@
 """Base metric class for CRN synthesis metrics."""
+
 from typing import Union
 
 import pandas as pd

@@ -1,4 +1,5 @@
 """Privacy checks for the synthetic data generation processing."""
+
 from itertools import combinations
 
 

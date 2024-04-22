@@ -1,4 +1,5 @@
 """Compute differentially private statistics from data."""
+
 from diffprivlib.tools.quantiles import median, quantile
 from diffprivlib.tools.utils import mean, std, var
 

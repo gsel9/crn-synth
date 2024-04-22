@@ -1,4 +1,5 @@
 """Ranking of generators based on performance scores."""
+
 import typing
 
 import numpy as np

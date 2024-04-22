@@ -1,4 +1,5 @@
 """This metric describes how difficult it is for an attacker to correctly guess the sensitive information using an algorithm called Correct Attribution Probability (CAP)"""
+
 from typing import Any, Dict, Union
 
 import numpy as np

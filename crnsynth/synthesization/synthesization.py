@@ -1,4 +1,5 @@
 """Functions to run synthesis pipeline on real data."""
+
 from pathlib import Path
 from typing import Union
 

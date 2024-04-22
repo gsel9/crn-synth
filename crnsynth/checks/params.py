@@ -1,4 +1,5 @@
 """Check parameters in classes and functions"""
+
 import warnings
 from typing import Any, Union
 

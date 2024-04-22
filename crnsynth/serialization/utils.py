@@ -1,4 +1,5 @@
 """Utility functions for serialization."""
+
 from pathlib import Path
 
 

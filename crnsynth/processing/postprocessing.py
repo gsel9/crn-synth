@@ -1,4 +1,5 @@
 """Post-processing functions for synthetic data after synthesis"""
+
 from typing import List
 
 import pandas as pd

@@ -1,4 +1,5 @@
 """Compare multiple synthetic data generation methods."""
+
 from pathlib import Path
 
 import pandas as pd
