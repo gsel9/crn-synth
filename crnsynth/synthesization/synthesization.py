@@ -5,7 +5,7 @@ from typing import Union
 
 import pandas as pd
 
-from crnsynth.generators.base_generator import BaseGenerator
+from crnsynth.generators.base import BaseGenerator
 from crnsynth.serialization.paths import create_output_dir
 
 

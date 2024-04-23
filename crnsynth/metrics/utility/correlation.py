@@ -1,6 +1,6 @@
 from sdmetrics.column_pairs import CorrelationSimilarity
 
-from crnsynth.metrics.base_metric import BaseMetric
+from crnsynth.metrics.base import BaseMetric
 
 
 def mean_features_correlation(data_real, data_synth):

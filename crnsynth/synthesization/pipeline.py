@@ -3,7 +3,7 @@ from typing import Dict, List, Union
 import pandas as pd
 
 from crnsynth.checks.params import check_param_consistency
-from crnsynth.generators.base_generator import BaseGenerator
+from crnsynth.generators.base import BaseGenerator
 from crnsynth.processing import postprocessing, preprocessing, utils
 from crnsynth.processing.generalization import BaseGeneralizationMech
 from crnsynth.synthesization.synthesization import generate_synth_data

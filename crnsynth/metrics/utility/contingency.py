@@ -1,7 +1,7 @@
 """Contingency similarity metric"""
 from sdmetrics.column_pairs import ContingencySimilarity
 
-from crnsynth.metrics.base_metric import BaseMetric
+from crnsynth.metrics.base import BaseMetric
 
 
 class ContingencySimilarityScore(BaseMetric):

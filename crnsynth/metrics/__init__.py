@@ -1,7 +1,12 @@
-from crnsynth.metrics.base_metric import BaseMetric
+from crnsynth.metrics.base import BaseMetric
 from crnsynth.metrics.privacy.catcap import CategoricalCAPScore
 from crnsynth.metrics.privacy.dcr import DistanceClosestRecord
 from crnsynth.metrics.privacy.nndr import NearestNeighborDistanceRatio
+from crnsynth.metrics.utility.contingency import ContingencySimilarityScore
+from crnsynth.metrics.utility.correlation import (
+    CorrelationSimilarityScore,
+    FeatureCorrelation,
+)
 
 PRIVACY_METRICS = [
     DistanceClosestRecord(),
@@ -9,4 +14,10 @@ PRIVACY_METRICS = [
     CategoricalCAPScore(),
 ]
 
-ALL_METRICS = {"privacy": PRIVACY_METRICS}
+UTILITY_METRICS = [
+    ContingencySimilarityScore(),
+    FeatureCorrelation(),
+    CorrelationSimilarityScore(),
+]
+
+ALL_METRICS = {"privacy": PRIVACY_METRICS, "utility": UTILITY_METRICS}

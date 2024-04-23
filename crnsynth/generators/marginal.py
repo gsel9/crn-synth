@@ -3,7 +3,7 @@ from typing import Any, List
 import pandas as pd
 from synthesis.synthesizers.marginal import MarginalSynthesizer
 
-from crnsynth.generators.base_generator import BaseGenerator
+from crnsynth.generators.base import BaseGenerator
 
 
 class MarginalGenerator(BaseGenerator):
@@ -12,9 +12,9 @@ class MarginalGenerator(BaseGenerator):
     Generate records based on marginal distribution of columns independently.
     """
 
-    def __init__(self, epsilon: float, **kwargs: Any) -> None:
+    def __init__(self, epsilon: float, verbose=1, **kwargs: Any) -> None:
         super().__init__()
-        self.model = MarginalSynthesizer()
+        self.model = MarginalSynthesizer(epsilon=epsilon, verbose=verbose)
         self.epsilon = epsilon
 
     def fit(self, data_real: pd.DataFrame) -> None:

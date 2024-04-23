@@ -7,7 +7,7 @@ import pandas as pd
 from sdmetrics.single_table import CategoricalCAP
 from sklearn.preprocessing import OrdinalEncoder
 
-from crnsynth.metrics.base_metric import BaseMetric
+from crnsynth.metrics.base import BaseMetric
 from crnsynth.processing import encoding
 
 

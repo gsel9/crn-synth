@@ -9,7 +9,7 @@ import pandas as pd
 from joblib import Parallel, delayed
 
 from crnsynth.checks.params import set_class_param
-from crnsynth.metrics.base_metric import BaseMetric
+from crnsynth.metrics.base import BaseMetric
 from crnsynth.processing.encoding import encode_data
 from crnsynth.processing.utils import flatten_dict
 
