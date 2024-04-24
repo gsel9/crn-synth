@@ -40,9 +40,11 @@ class PrivBayes(BaseGenerator):
         """
         self.model.save(path)
 
-    def load(path: Union[str, Path]) -> Any:
+    def load(self, path: Union[str, Path]) -> Any:
         """Load the model from a file.
 
         PrivBayes has its own loading method, so we use that to avoid errors.
         """
-        return PrivBayesDK.load(path)
+        self.model = self.model.load(path)
+        self.epsilon = self.model.epsilon
+        return self

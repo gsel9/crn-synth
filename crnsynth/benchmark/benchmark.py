@@ -6,7 +6,7 @@ import pandas as pd
 
 from crnsynth.benchmark.review import SyntheticDataReview
 from crnsynth.serialization.paths import create_output_dir
-from crnsynth.serialization.save import save_csv, save_generator
+from crnsynth.serialization.save import object_to_dict, save_csv, save_json
 from crnsynth.synthesization.synthesization import generate_synth_data
 
 
@@ -60,12 +60,17 @@ def benchmark_generators(
         if fname_param is not None and fname_param in generator.__dict__.keys():
             fname += f"_{fname_param}{generator.__dict__[fname_param]}"
 
-        # save synthetic data and generator
+        # save synthetic data and fitted generator
         save_csv(data_synth, path_out / f"synthetic_data/{fname}.csv")
         generator.save(path_out / f"generators/{fname}.pkl")
 
+        # store generator config
+        save_json(path_out / f"configs/{fname}.json", object_to_dict(generator))
+
         if verbose:
-            print(f"Saved synthetic data and generator for {fname} at {path_out}")
+            print(
+                f"Saved synthetic data, generator and configs for {fname} at {path_out}"
+            )
 
         # run reviewer
         if reviewer:

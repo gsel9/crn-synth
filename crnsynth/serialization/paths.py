@@ -9,7 +9,7 @@ PATH_CODE = PATH_REPO / "crnsynth"
 PATH_RESULTS = PATH_REPO / "results"
 
 # Default directories to create for results
-DEFAULT_DIRS = ["synthetic_data", "generators", "configs", "reports"]
+DEFAULT_DIRS = ["synthetic_data", "generators", "reports", "configs"]
 
 
 # path to all data files available for synthesis.
