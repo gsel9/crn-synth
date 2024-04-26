@@ -70,7 +70,7 @@ class DistanceClosestRecord(BaseMetric):
 
         # encode data using encoder
         data_train, data_synth, data_holdout = self.encode(
-            data_train, data_synth, data_holdout, return_df=True
+            data_train, data_synth, data_holdout, return_dataframe=True
         )
 
         # compute distances to closest real record

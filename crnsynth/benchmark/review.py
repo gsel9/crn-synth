@@ -86,18 +86,18 @@ class SyntheticDataReview:
         """Use one encoding scheme for all metrics, only apply once to save computation time"""
         # fit and transform training data
         data_train, self.encoder = encode_data(
-            data_train, encoder=self.encoder, refit=True, return_df=True
+            data_train, encoder=self.encoder, refit=True, return_dataframe=True
         )
 
         # transform synthetic data using the encoder fitted on the training data
         data_synth, _ = encode_data(
-            data_synth, encoder=self.encoder, refit=False, return_df=True
+            data_synth, encoder=self.encoder, refit=False, return_dataframe=True
         )
 
         # transform holdout data using the encoder fitted on the training data
         if data_holdout is not None:
             data_holdout, _ = encode_data(
-                data_holdout, encoder=self.encoder, refit=False, return_df=True
+                data_holdout, encoder=self.encoder, refit=False, return_dataframe=True
             )
 
         # add encoder = None to metric_kwargs to avoid redundant encoding in each metric

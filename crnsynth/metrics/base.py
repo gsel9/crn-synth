@@ -37,23 +37,32 @@ class BaseMetric:
         """Compute the metric."""
         raise NotImplementedError("compute() method not implemented")
 
-    def encode(self, data_train, data_synth, data_holdout=None, return_df=True):
+    def encode(self, data_train, data_synth, data_holdout=None, return_dataframe=True):
         """Encode datasets. Fit encoder on train. Transform train, synth and holdout (optional)."""
         if self.encoder is not None:
             # fit and transform training data
             data_train, self.encoder = encode_data(
-                data_train, encoder=self.encoder, refit=True, return_df=return_df
+                data_train,
+                encoder=self.encoder,
+                refit=True,
+                return_dataframe=return_dataframe,
             )
 
             # transform synthetic data using the encoder fitted on the training data
             data_synth, _ = encode_data(
-                data_synth, encoder=self.encoder, refit=False, return_df=return_df
+                data_synth,
+                encoder=self.encoder,
+                refit=False,
+                return_dataframe=return_dataframe,
             )
 
             # optional: transform holdout data using the encoder fitted on the training data
             if data_holdout is not None:
                 data_holdout, _ = encode_data(
-                    data_holdout, encoder=self.encoder, refit=False, return_df=return_df
+                    data_holdout,
+                    encoder=self.encoder,
+                    refit=False,
+                    return_dataframe=return_dataframe,
                 )
         return data_train, data_synth, data_holdout
 

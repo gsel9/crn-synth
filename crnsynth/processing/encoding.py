@@ -65,15 +65,21 @@ def get_encoder(encoder: str):
 
 def convert_encoded_data_to_dataframe(data_enc, encoder, column_names=None):
     """Convert encoded data back to a dataframe"""
+    # Get the feature names
+    new_column_names = encoder.get_feature_names_out(input_features=column_names)
+
+    # Remove 'remainder__' prefix (in case you used a ColumnTransformer with passthrough)
+    new_column_names = [name.replace("remainder__", "") for name in new_column_names]
+
     # convert the encoded data to a DataFrame
     df_enc = pd.DataFrame(
         data_enc,
-        columns=encoder.get_feature_names_out(column_names),
+        columns=new_column_names,
     )
     return df_enc
 
 
-def encode_data(data, encoder, refit: bool = False, return_df: bool = True):
+def encode_data(data, encoder, refit: bool = False, return_dataframe: bool = True):
     """Encode data using a ColumnTransformer"""
     assert (
         encoder is not None
@@ -103,7 +109,7 @@ def encode_data(data, encoder, refit: bool = False, return_df: bool = True):
     data_enc = encoder.transform(data)
 
     # convert the transformed data back to a DataFrame
-    if return_df:
+    if return_dataframe:
         data_enc = convert_encoded_data_to_dataframe(
             data_enc, encoder, column_names=data.columns
         )

@@ -62,7 +62,7 @@ class CategoricalCAPScore(BaseMetric):
         # encode data using encoder
         if self.encoder is not None:
             data_train, data_synth, _ = self.encode(
-                data_train, data_synth, data_holdout, return_df=True
+                data_train, data_synth, data_holdout, return_dataframe=True
             )
 
         # compute CAP score
