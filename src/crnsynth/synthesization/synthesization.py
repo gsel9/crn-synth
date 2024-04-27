@@ -9,6 +9,9 @@ from crnsynth.generators.base import BaseGenerator
 from crnsynth.serialization.paths import create_output_dir
 
 
+# TODO: make decorators to integrate synthcity-specific objects 
+# into workflow 
+#@synthcity_integration
 def generate_synth_data(
     data_real: pd.DataFrame,
     generator: BaseGenerator,
