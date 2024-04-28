@@ -7,9 +7,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from synthcity.plugins import Plugin
+from synthcity.utils.serialization import save_to_file
+
 
 def save_generator(generator, path: Path) -> None:
     """Save a generator to disk"""
+    if isinstance(generator, Plugin):
+        save_to_file(path, generator)
+
     with open(path, "wb") as f:
         pickle.dump(generator, f)
 

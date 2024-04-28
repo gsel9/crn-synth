@@ -17,5 +17,7 @@ def dataloader_to_dataframe():
 
 
 #if isinstance(generator, Plugin):
-def save_synthcity_generator():
-    pass 
+def enable_synthcity(func_synth):
+    data_synth, generator = func_synth()
+    if isinstance(data_synth, DataLoader):
+        return data_synth.dataframe(), generator

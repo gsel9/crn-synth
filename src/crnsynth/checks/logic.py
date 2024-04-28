@@ -12,3 +12,4 @@ def check_bound(df, column_lowerbound, column_upperbound):
 def check_no_invalid_bool_combination(df, col1, col2, invalid_combo):
     """Check if there aren't any invalid bool combination"""
     return not any((df[col1] == invalid_combo[0]) & (df[col2] == invalid_combo[1]))
+
